@@ -1,0 +1,1 @@
+# DevMinds_Ecoevents_Laravel
