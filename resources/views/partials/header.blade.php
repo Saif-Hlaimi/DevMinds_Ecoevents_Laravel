@@ -36,13 +36,31 @@
                                 <li><a href="{{ route('cart') }}">Cart</a></li>
                                 <li><a href="{{ route('checkout') }}">Checkout</a></li>
                                 <li><a href="{{ route('faq') }}">FAQ</a></li>
-                                <li><a href="{{ route('login') }}">Login</a></li>
-                                <li><a href="{{ route('register') }}">Register</a></li>
+                                
                                 <li><a href="{{ route('error.page') }}">404 Error</a></li>
                             </ul>
                         </li>
                         <li><a href="{{ route('blog') }}">Blog</a></li>
                         <li><a href="{{ route('contact') }}">Contact Us</a></li>
+                        @auth
+                            <li class="menu-item-has-children profile-pill">
+                                <a href="{{ route('profile') }}">
+                                    <span class="profile-avatar">{{ strtoupper(mb_substr(auth()->user()->name,0,1)) }}</span>
+                                    <span>{{ \Illuminate\Support\Str::of(auth()->user()->name)->before(' ') }}</span>
+                                </a>
+                                <ul class="sub-menu">
+                                    <li><a href="{{ route('profile') }}">View profile</a></li>
+                                    <li>
+                                        <form action="{{ route('logout') }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-link p-0 text-start">Logout</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        @else
+                            <li><a href="{{ route('login') }}">Login</a></li>
+                        @endauth
                     </ul>
                 </div>
             </div>
