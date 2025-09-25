@@ -40,6 +40,7 @@
                                 <li><a href="{{ route('error.page') }}">404 Error</a></li>
                             </ul>
                         </li>
+                        <li><a href="{{ route('groups.index') }}">Groups</a></li>
                         <li><a href="{{ route('blog') }}">Blog</a></li>
                         <li><a href="{{ route('contact') }}">Contact Us</a></li>
                         @auth

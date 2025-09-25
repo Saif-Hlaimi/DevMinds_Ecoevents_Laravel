@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\MembershipController;
+use App\Http\Controllers\GroupPostController;
 
 
 // Render Blade homepage (Vite + Blade)
@@ -52,3 +55,26 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 // Profile
 Route::get('/profile', [ProfileController::class, 'show'])->name('profile')->middleware('auth');
+
+// Groups
+Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
+Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create')->middleware('auth');
+Route::post('/groups', [GroupController::class, 'store'])->name('groups.store')->middleware('auth');
+Route::get('/groups/{slug}', [GroupController::class, 'show'])->name('groups.show');
+
+// Membership
+Route::post('/groups/{slug}/join', [MembershipController::class, 'join'])->name('groups.join')->middleware('auth');
+Route::post('/groups/{slug}/leave', [MembershipController::class, 'leave'])->name('groups.leave')->middleware('auth');
+Route::post('/groups/{slug}/requests/{requestId}/approve', [MembershipController::class, 'approve'])->name('groups.requests.approve')->middleware('auth');
+Route::post('/groups/{slug}/requests/{requestId}/reject', [MembershipController::class, 'reject'])->name('groups.requests.reject')->middleware('auth');
+
+// Posts
+Route::post('/groups/{slug}/posts', [GroupPostController::class, 'store'])->name('groups.posts.store')->middleware('auth');
+Route::post('/posts/{postId}/react', [GroupPostController::class, 'react'])->name('groups.posts.react')->middleware('auth');
+Route::post('/posts/{postId}/comment', [GroupPostController::class, 'comment'])->name('groups.posts.comment')->middleware('auth');
+Route::delete('/posts/{postId}', [GroupPostController::class, 'destroy'])->name('groups.posts.destroy')->middleware('auth');
+
+// Group manage (owner)
+Route::get('/groups/{slug}/edit', [GroupController::class, 'edit'])->name('groups.edit')->middleware('auth');
+Route::put('/groups/{slug}', [GroupController::class, 'update'])->name('groups.update')->middleware('auth');
+Route::delete('/groups/{slug}', [GroupController::class, 'destroy'])->name('groups.destroy')->middleware('auth');
