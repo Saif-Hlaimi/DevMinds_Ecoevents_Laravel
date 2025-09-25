@@ -44,6 +44,15 @@
                         <li><a href="{{ route('blog') }}">Blog</a></li>
                         <li><a href="{{ route('contact') }}">Contact Us</a></li>
                         @auth
+                            <li>
+                                <a href="{{ route('notifications.index') }}" class="position-relative">
+                                    <i class="fa-regular fa-bell"></i>
+                                    @php $count = auth()->user()->unreadNotifications()->count(); @endphp
+                                    @if($count)
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ $count }}</span>
+                                    @endif
+                                </a>
+                            </li>
                             <li class="menu-item-has-children profile-pill">
                                 <a href="{{ route('profile') }}">
                                     <span class="profile-avatar">{{ strtoupper(mb_substr(auth()->user()->name,0,1)) }}</span>

@@ -7,6 +7,8 @@ use App\Models\GroupMember;
 use App\Models\GroupPost;
 use App\Models\GroupPostComment;
 use App\Models\GroupPostReaction;
+use App\Notifications\PostCommented;
+use App\Notifications\PostReacted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -67,6 +69,9 @@ class GroupPostController extends Controller
                 ['post_id'=>$postId,'user_id'=>Auth::id()],
                 ['type'=>$data['type']]
             );
+            if ($post->user_id !== Auth::id()) {
+                optional($post->user)->notify(new PostReacted($post, Auth::user(), $data['type']));
+            }
         }
         if ($request->expectsJson()) {
             $post->loadCount(["reactions as likes_count"=>fn($q)=>$q->where('type','like'),"reactions as dislikes_count"=>fn($q)=>$q->where('type','dislike')]);
@@ -85,6 +90,9 @@ class GroupPostController extends Controller
             'user_id'=>Auth::id(),
             'content'=> strip_tags($data['content'])
         ]);
+        if ($post->user_id !== Auth::id()) {
+            optional($post->user)->notify(new PostCommented($post, Auth::user()));
+        }
         if ($request->expectsJson()) {
             $comment->load('user');
             return response()->json(['ok'=>true,'comment'=>$comment]);

@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\GroupPostController;
+use App\Http\Controllers\NotificationController;
 
 
 // Render Blade homepage (Vite + Blade)
@@ -73,6 +74,11 @@ Route::post('/groups/{slug}/posts', [GroupPostController::class, 'store'])->name
 Route::post('/posts/{postId}/react', [GroupPostController::class, 'react'])->name('groups.posts.react')->middleware('auth');
 Route::post('/posts/{postId}/comment', [GroupPostController::class, 'comment'])->name('groups.posts.comment')->middleware('auth');
 Route::delete('/posts/{postId}', [GroupPostController::class, 'destroy'])->name('groups.posts.destroy')->middleware('auth');
+
+// Notifications
+Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index')->middleware('auth');
+Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read')->middleware('auth');
+Route::post('/notifications/read-all', [NotificationController::class, 'markAll'])->name('notifications.readAll')->middleware('auth');
 
 // Group manage (owner)
 Route::get('/groups/{slug}/edit', [GroupController::class, 'edit'])->name('groups.edit')->middleware('auth');
