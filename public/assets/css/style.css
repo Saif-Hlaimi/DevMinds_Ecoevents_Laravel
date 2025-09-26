@@ -2151,9 +2151,16 @@ input {
 }
 
 .header-one__logo {
-  padding: 27px 60px;
+  padding: 17px 30px;
+  height: 105px;
   background-color: var(--primary-color);
 }
+/* ...existing code... */
+.header-one__logo img {
+  max-width: 90px;
+  height: auto;
+}
+/* ...existing code... */
 .header-one__dots {
   padding: 30px;
   background-color: var(--heading-color);
@@ -2469,10 +2476,17 @@ input {
   right: 11%;
   bottom: 0;
   z-index: 1;
+
 }
 .banner__image {
   position: relative;
   z-index: 1;
+  
+}
+.img-fluid {
+  width: 50px;
+  height: 50px;
+  margin-right: 100px;
 }
 .banner__image img {
   width: 100%;
@@ -3637,6 +3651,7 @@ input {
 }
 .achievement__item h5 {
   color: var(--white);
+  background-color: var(--primary-color);
   text-transform: capitalize;
 }
 .achievement__item span {
@@ -6179,7 +6194,13 @@ input {
 @media screen and (max-width: 1460px) {
   .header-one__logo {
     padding: 27px 20px;
+    height: 70px;
   }
+  /* ...existing code... */
+.header-one__logo img {
+  max-width: 570px;
+}
+/* ...existing code... */
   .header-one__info .menu_info {
     padding: 25px 15px;
   }

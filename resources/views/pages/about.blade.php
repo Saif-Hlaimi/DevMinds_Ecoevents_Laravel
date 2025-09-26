@@ -29,7 +29,7 @@
                             <img src="{{ asset('assets/images/about/02.png') }}" alt="image">
                         </div>
                         <div class="info d-none d-sm-block bg-image" data-background="{{ asset('assets/images/about/about-ex-bg.png') }}">
-                            <h2><span class="count">25</span>+</h2>
+                            <h2><span class="count">5</span>+</h2>
                             <span class="year">Years Experience</span>
                         </div>
                         <div class="stroke-text d-none d-sm-block">
@@ -67,7 +67,7 @@
                                 <i class="fa-solid fa-phone-volume ring-animation"></i>
                                 <div class="about_info_con">
                                     <span class="d-block text-capitalize">call any time</span>
-                                    <a href="tel:+912659302003">+91 2659 302 003</a>
+                                    <a href="tel:+912659302003">+21623000000</a>
                                 </div>
                             </div>
                         </div>
@@ -79,7 +79,7 @@
     <!-- About area end here -->
 
     <!-- Achievement area start here -->
-    <section class="achievement" data-background="{{ asset('assets/images/bg/achievement-bg2.jpg') }}">
+    <section class="achievement" data-background="{{ asset('assets/images/bg/achievement.jpg') }}">
         <div class="container">
             <div class="row g-4 align-items-center justify-content-between">
                 <div class="col-lg-5 achievement__bor-right wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s">
@@ -127,7 +127,7 @@
                         <p class="wow fadeInDown" data-wow-duration="1.8s" data-wow-delay=".8s">It's important to note that tree planting should be carried out thoughtfully, considering factors such as the suitability of tree species to the local ecosystem</p>
                         <div class="d-flex align-items-center gap-5 flex-wrap mt-45 mb-30">
                             <ul class="wow fadeInDown" data-wow-duration="1.4s" data-wow-delay=".4s">
-                                <li><img class="pe-2" src="{{ asset('assets/images/icon/leaf.svg') }}" alt="icon"> Mentoring</li>
+                                <li><img class="pe-2" src="{{ asset('assets/images/icon/leaf.svg') }}" alt="icon"> Events orgnazing</li>
                             </ul>
                             <ul class="wow fadeInDown" data-wow-duration="1.4s" data-wow-delay=".4s">
                                 <li><img class="pe-2" src="{{ asset('assets/images/icon/leaf.svg') }}" alt="icon"> Donating</li>
@@ -156,14 +156,14 @@
         <div class="container">
             <div class="section-header text-center">
                 <h5 class="wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s"><img src="{{ asset('assets/images/icon/leaf.svg') }}" alt="image"> OUR TEAM MEMBERS</h5>
-                <h2 class="wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">foresty awesome team</h2>
+                <h2 class="wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">Ecoevents awesome team</h2>
             </div>
             <div class="row g-4">
                 @for ($i = 1; $i <= 4; $i++)
                     <div class="col-xl-3 col-lg-6 col-md-6 wow fadeInUp" data-wow-duration="{{ number_format(1.2 + ($i-1)*0.2,1) }}s" data-wow-delay=".{{ number_format(0.2 + ($i-1)*0.2,1) }}s">
                         <div class="team__item team-two__item">
                             <div class="team__item-image">
-                                <img src="{{ asset('assets/images/team/'.sprintf('%02d',$i).'.png') }}" alt="image">
+                                <img src="{{ asset('assets/images/team/'.sprintf('%02d',$i).'.png') }}" alt="image" style="height: 30px; width: 20;">
                                 <div class="team__item-image-icon social-icon">
                                     <a href="#0"><i class="fa-brands fa-facebook-f"></i></a>
                                     <a href="#0"><i class="fa-brands fa-twitter"></i></a>
@@ -171,7 +171,7 @@
                                     <a href="#0"><i class="fa-brands fa-youtube"></i></a>
                                 </div>
                             </div>
-                            <h3><a href="#0">{{ ['Dana A. Hutchison','Bonnie J. Britt','Francis A. Cote','Mario L. Lawhorn'][$i-1] }}</a></h3>
+                            <h3><a href="#0">{{ ['Feryal Yahyaoui','Saif Hlaimi','Yassine Mighri','Walid'][$i-1] }}</a></h3>
                             <span>{{ ['Founder','Forest Officer','Garden Maker','Co - Founder'][$i-1] }}</span>
                         </div>
                     </div>
@@ -236,7 +236,7 @@
             <div class="testimonial__head-wrp mb-65">
                 <div class="section-header m-0">
                     <h5 class="wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s"><img src="{{ asset('assets/images/icon/leaf.svg') }}" alt="image"> our client’s feedback</h5>
-                    <h2 class="wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">foresty loves people</h2>
+                    <h2 class="wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">Ecoevents loves people</h2>
                 </div>
                 <div class="dot-wrp wow fadeInUp mt-5 mt-sm-0" data-wow-duration="1.6s" data-wow-delay=".6s">
                     <div class="dot testimonial__dot"></div>

@@ -3,8 +3,8 @@
         <div class="d-flex justify-content-between align-items-center">
             <div class="header-one__item d-none d-xl-block">
                 <div class="d-flex align-items-center">
-                    <div class="header-one__logo">
-                        <a href="{{ route('home') }}"><img src="{{ asset('assets/images/logo/logo-light.svg') }}" alt="logo"></a>
+                    <div class="header-one__logo"> <br>
+                        <a href="{{ route('home') }}"><img src="{{ asset('assets/images/logo/images.png') }}" alt="logo"></a>
                     </div>
                     <button id="openButton" class="header-one__dots">
                         <img src="{{ asset('assets/images/header/header-dot.png') }}" alt="dots">
@@ -15,7 +15,7 @@
                 <div class="header-wrapper justify-content-center">
                     <div class="logo-menu d-block d-xl-none">
                         <a href="{{ route('home') }}" class="logo">
-                            <img src="{{ asset('assets/images/logo/logo-light.svg') }}" alt="logo">
+                            <img src="{{ asset('assets/images/logo/images.png') }}" alt="logo">
                         </a>
                     </div>
                     <div class="header-bar d-xl-none">
@@ -83,7 +83,7 @@
                         <i class="fa-solid call_ico fa-phone-volume"></i>
                         <div class="call_info">
                             <span>Call Any Time</span>
-                            <a class="d-block p-0" href="tel:+912659302003">+91 2659 302 003</a>
+                            <a class="d-block p-0" href="tel:+912659302003">+21626590302</a>
                         </div>
                     </li>
                 </ul>

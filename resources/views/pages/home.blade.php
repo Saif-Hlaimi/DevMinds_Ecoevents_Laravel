@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Foresty - Ecology and Environment')
+@section('title', 'Ecoevents')
 
 @section('content')
     
@@ -63,11 +63,12 @@
             $involveBg = $pick($land) ?? $pick($neutral) ?? asset('assets/images/bg/involve.jpg');
         @endphp
     <!-- Banner area start here -->
-    <section class="banner" data-background="{{ $heroBg }}">
-        <div class="banner__shape d-none d-xxl-block wow bounceInRight" data-wow-duration=".6s" data-wow-delay=".8s">
-            <img src="{{ asset('assets/images/banner/01.png') }}" alt="shape">
+    <section class="banner" data-background="{{ $heroBg }}"> 
+        <div data-wow-duration=".6s" data-wow-delay=".8s">
+            
         </div>
-        <div id="scrollDown" class="banner__scroll-text"><span>SCROLL NOW</span> <span class="banner__scroll-text-line"></span></div>
+        <div id="scrollDown" class="banner__scroll-text"><span>SCROLL NOW</span> <span class="banner__scroll-text-line"></span>
+</div>
         <div class="banner__leaf wow slideInLeft d-none d-md-block" data-wow-duration="1s" data-wow-delay="1s">
             <img src="{{ asset('assets/images/shape/leaf.png') }}" alt="shape">
         </div>
@@ -77,24 +78,27 @@
                     <div class="banner__image wow fadeInLeft" data-wow-duration="1.2s" data-wow-delay=".2s">
                         <img src="{{ $heroSide }}" alt="image">
                         <div class="banner__image-text">
-                            <img src="{{ asset('assets/images/banner/text.png') }}" alt="strock-text">
                         </div>
                     </div>
                 </div>
                 <div class="col-xl-8">
                     <div class="banner__content">
-                        <h4 class="wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s">Embrace the Green, Sow the Future</h4>
-                        <h1 class="wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">We Are Here to Increase Your modern life With <span class="primary-color">planting</span></h1>
-                        <div class="row g-4 align-items-center">
-                            <div class="col-md-4">
+                        <h4 class="wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s">Embrace the Green, Sow the Future</h4> <br> <br>
+                        <h1 class="wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">We Are Here to Increase Your modern life With <span class="primary-color">Ecoevents</span></h1> <br> 
+                        <div class="row g-4 align-items-center"> <br> <br>
+                            <div class="col-md-4"> <br>
                                 <a href="{{ route('about') }}" class="btn-one wow fadeInUp" data-wow-duration="1.5s" data-wow-delay=".5s"><span>Discover with us</span> <i class="fa-solid fa-angles-right"></i></a>
                             </div>
                             <div class="col-md-8">
                                 <div class="banner__content-con wow fadeInUp" data-wow-duration="1.6s" data-wow-delay=".6s">
                                     <img src="{{ asset('assets/images/icon/arrow-long.png') }}" alt="arrow">
-                                    <p>Ecology is the scientific study of the relationships between organisms & their environment, including their physical, chemical</p>
+                                    <p>Ecology is the scientific study of the relationships between organisms & their environment, including their physical, chemical</p> 
+                                    
                                 </div>
-                            </div>
+                                
+                            </div> <br> <br> <br> <br>
+                                                            <img src="/assets/images/bg/achievement.jpg" alt="" style="width: 500px; height: 250px; margin-top: 80px; margin-left: 350px;">
+
                         </div>
                     </div>
                 </div>
@@ -119,9 +123,9 @@
                     <div class="about__info wow fadeInUp" data-wow-duration="1.8s" data-wow-delay=".8s">
                         <div class="about__info-info-con">
                             <ul>
-                                <li><img src="{{ asset('assets/images/about/info.png') }}" alt="image"></li>
                                 <li>
-                                    <h4><a href="#0">Robert Joe Kerry</a></h4>
+                                <li>
+                                    <h4><a href="#0">DevMinds</a></h4>
                                     <span>Founder</span>
                                 </li>
                             </ul>
@@ -171,7 +175,7 @@
     <section class="video pt-130 pb-130" data-background="{{ $videoBg }}">
         <div class="container">
             <div class="video__text">
-                <h2 class="wow bounceIn" data-wow-duration="1.2s" data-wow-delay=".2s">FORESTY</h2>
+                <h2 class="wow bounceIn" data-wow-duration="1.2s" data-wow-delay=".2s">ECOEVENTS</h2>
             </div>
             <div class="video__btn-wrp">
                 <div class="video-btn video-pulse">
@@ -257,9 +261,9 @@
                         <div class="accordion" id="accordionExample">
                             @php
                                 $acc = [
-                                    ['id'=>'One','title'=>'Carbon Offsetting','img'=>'01.jpg','open'=>true],
-                                    ['id'=>'Two','title'=>'E-Waste Recycling','img'=>'02.jpg'],
-                                    ['id'=>'Three','title'=>'Water Conservation','img'=>'03.jpg'],
+                                    ['id'=>'One','title'=>'Events organizing','img'=>'01.jpg','open'=>true],
+                                    ['id'=>'Two','title'=>'Donating','img'=>'02.jpg'],
+                                    ['id'=>'Three','title'=>'Groups discussions','img'=>'03.jpg'],
                                     ['id'=>'Four','title'=>'Community Foresty','img'=>'04.jpg'],
                                 ];
                             @endphp
@@ -452,7 +456,7 @@
             <div class="testimonial__head-wrp mb-65">
                 <div class="section-header m-0">
                     <h5 class="wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s"><img src="{{ asset('assets/images/icon/leaf.svg') }}" alt="image"> our client’s feedback</h5>
-                    <h2 class="wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">foresty loves people</h2>
+                    <h2 class="wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">Ecoevents loves people</h2>
                 </div>
                 <div class="dot-wrp wow fadeInUp mt-5 mt-sm-0" data-wow-duration="1.6s" data-wow-delay=".6s">
                     <div class="dot testimonial__dot"></div>
@@ -488,7 +492,7 @@
             <div class="pb-65 bor-bottom">
                 <div class="section-header text-center">
                     <h5 class="wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s"><img src="{{ asset('assets/images/icon/leaf.svg') }}" alt="image"> OUR TEAM MEMBERS</h5>
-                    <h2 class="wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">foresty awesome team</h2>
+                    <h2 class="wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">ECOEVENTS awesome team</h2>
                 </div>
                 <div class="row g-4">
                     @for ($i = 1; $i <= 4; $i++)
@@ -503,8 +507,8 @@
                                         <a href="#0"><i class="fa-brands fa-youtube"></i></a>
                                     </div>
                                 </div>
-                                <h3><a href="#0">{{ ['Dana A. Hutchison','Bonnie J. Britt','Francis A. Cote','Mario L. Lawhorn'][$i-1] }}</a></h3>
-                                <span>{{ ['Founder','Forest Officer','Garden Maker','Co - Founder'][$i-1] }}</span>
+                                <h3><a href="#0">{{ ['Feryal Yahyaoui','Saif Hlaimi','Elaa Sboui','Walid Khrouf'][$i-1] }}</a></h3>
+                                <span>{{ ['Founder','Forest Officer','Garden Maker','Co - Founder','Yassine Mighri'][$i-1] }}</span>
                             </div>
                         </div>
                     @endfor
@@ -521,7 +525,7 @@
             <div class="blog__head-wrp mb-65">
                 <div class="section-header m-0">
                     <h5 class="wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s"><img src="{{ asset('assets/images/icon/leaf.svg') }}" alt="image"> LATEST NEWS</h5>
-                    <h2 class="wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">get news from foresty</h2>
+                    <h2 class="wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">Get news from Ecoevents</h2>
                 </div>
                 <a href="{{ url('/blog-3.html') }}" class="btn-one mt-4 mt-md-0 wow fadeInUp" data-wow-duration="1.6s" data-wow-delay=".6s"><span>view all news</span> <i class="fa-solid fa-angles-right"></i></a>
             </div>
@@ -567,7 +571,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-3 wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">
-                    <a href="{{ route('home') }}" class="our-info__logo mb-4 mb-lg-0"><img src="{{ asset('assets/images/logo/logo-light.svg') }}" alt="logo"></a>
+                    <a href="{{ route('home') }}" class="our-info__logo mb-4 mb-lg-0">
                 </div>
                 <div class="col-lg-5 wow fadeInDown" data-wow-duration="1.6s" data-wow-delay=".6s">
                     <div class="our-info__input">
