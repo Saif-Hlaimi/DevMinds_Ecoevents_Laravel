@@ -70,7 +70,8 @@ class GroupPostController extends Controller
                 ['type'=>$data['type']]
             );
             if ($post->user_id !== Auth::id()) {
-                optional($post->user)->notify(new PostReacted($post, Auth::user(), $data['type']));
+                // Send immediately to the database channel (no queue worker needed)
+                optional($post->user)->notifyNow(new PostReacted($post, Auth::user(), $data['type']));
             }
         }
         if ($request->expectsJson()) {
@@ -91,7 +92,8 @@ class GroupPostController extends Controller
             'content'=> strip_tags($data['content'])
         ]);
         if ($post->user_id !== Auth::id()) {
-            optional($post->user)->notify(new PostCommented($post, Auth::user()));
+            // Send immediately to the database channel (no queue worker needed)
+            optional($post->user)->notifyNow(new PostCommented($post, Auth::user()));
         }
         if ($request->expectsJson()) {
             $comment->load('user');

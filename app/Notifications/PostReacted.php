@@ -5,10 +5,9 @@ namespace App\Notifications;
 use App\Models\GroupPost;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class PostReacted extends Notification implements ShouldQueue
+class PostReacted extends Notification
 {
     use Queueable;
 

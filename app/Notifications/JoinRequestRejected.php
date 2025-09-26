@@ -4,10 +4,9 @@ namespace App\Notifications;
 
 use App\Models\Group;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class JoinRequestRejected extends Notification implements ShouldQueue
+class JoinRequestRejected extends Notification
 {
     use Queueable;
 

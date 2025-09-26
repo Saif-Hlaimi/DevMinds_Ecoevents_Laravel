@@ -28,7 +28,7 @@ class MembershipController extends Controller
             $admins = GroupMember::where('group_id',$group->id)->whereIn('role',["admin","moderator"])->pluck('user_id');
             foreach ($admins as $adminId) {
                 if ($adminId !== Auth::id()) {
-                    optional(\App\Models\User::find($adminId))->notify(new MemberJoinedPublicGroup($group, Auth::user()));
+                    optional(\App\Models\User::find($adminId))->notifyNow(new MemberJoinedPublicGroup($group, Auth::user()));
                 }
             }
             return back()->with('success','You joined the group');
@@ -44,7 +44,7 @@ class MembershipController extends Controller
         $admins = GroupMember::where('group_id',$group->id)->whereIn('role',["admin","moderator"])->pluck('user_id');
         foreach ($admins as $adminId) {
             if ($adminId !== Auth::id()) {
-                optional(\App\Models\User::find($adminId))->notify(new JoinRequestCreated($group, $requestModel));
+                optional(\App\Models\User::find($adminId))->notifyNow(new JoinRequestCreated($group, $requestModel));
             }
         }
         return back()->with('success','Request sent to admins');
@@ -69,7 +69,7 @@ class MembershipController extends Controller
         );
         // Notify requester about approval
         if ($join->user_id !== Auth::id()) {
-            optional($join->user)->notify(new JoinRequestApproved($group));
+            optional($join->user)->notifyNow(new JoinRequestApproved($group));
         }
         return back()->with('success','Request approved');
     }
@@ -82,7 +82,7 @@ class MembershipController extends Controller
         $join->update(['status'=>'rejected','handled_by'=>Auth::id(),'handled_at'=>now()]);
         // Notify requester about rejection
         if ($join->user_id !== Auth::id()) {
-            optional($join->user)->notify(new JoinRequestRejected($group));
+            optional($join->user)->notifyNow(new JoinRequestRejected($group));
         }
         return back()->with('success','Request rejected');
     }

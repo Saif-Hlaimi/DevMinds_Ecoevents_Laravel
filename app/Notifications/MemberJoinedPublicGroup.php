@@ -5,10 +5,9 @@ namespace App\Notifications;
 use App\Models\Group;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class MemberJoinedPublicGroup extends Notification implements ShouldQueue
+class MemberJoinedPublicGroup extends Notification
 {
     use Queueable;
 
