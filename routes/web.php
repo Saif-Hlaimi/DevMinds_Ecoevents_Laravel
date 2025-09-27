@@ -10,6 +10,7 @@ use App\Http\Controllers\GroupPostController;
 use App\Http\Controllers\DonationCauseController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\EventController;
 
 
 // Render Blade homepage (Vite + Blade)
@@ -63,6 +64,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 // Profile
 Route::get('/profile', [ProfileController::class, 'show'])->name('profile')->middleware('auth');
+Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update')->middleware('auth');
+Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('auth');
 
 // Groups
 Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
@@ -93,3 +96,13 @@ Route::post('/notifications/read-all', [NotificationController::class, 'markAll'
 Route::get('/groups/{slug}/edit', [GroupController::class, 'edit'])->name('groups.edit')->middleware('auth');
 Route::put('/groups/{slug}', [GroupController::class, 'update'])->name('groups.update')->middleware('auth');
 Route::delete('/groups/{slug}', [GroupController::class, 'destroy'])->name('groups.destroy')->middleware('auth');
+
+// Events
+Route::get('/events/create', [EventController::class, 'create'])->name('events.create')->middleware('auth');
+Route::get('/events', [EventController::class, 'index'])->name('events.index');
+Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+Route::get('/events/create', [EventController::class, 'create'])->name('events.create')->middleware('auth');
+Route::post('/events', [EventController::class, 'store'])->name('events.store');
+Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
+Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
+Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');

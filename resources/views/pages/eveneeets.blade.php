@@ -3,11 +3,8 @@
 @section('content')
 	<section class="page-banner bg-image pt-130 pb-130">
 		<div class="container">
-			<h2 class="wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s">Events 01</h2>
-			<div class="breadcrumb-list wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">
-				<a href="{{ route('home') }}">Home :</a>
-				<span class="primary-color">Events 01</span>
-			</div>
+			<h2 class="wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s">Events</h2>
+			
 		</div>
 	</section>
 	<section class="pt-130 pb-130">

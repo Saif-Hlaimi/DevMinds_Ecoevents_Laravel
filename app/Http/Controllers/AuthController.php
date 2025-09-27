@@ -6,16 +6,23 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+<<<<<<< Updated upstream
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
+=======
+use Illuminate\Support\Facades\Storage;
+
+>>>>>>> Stashed changes
 class AuthController extends Controller
 {
+    // Afficher page login
     public function showLogin()
     {
         return view('pages.login');
     }
 
+    // Traitement login
     public function login(Request $request)
     {
         $data = $request->validate([
@@ -34,23 +41,37 @@ class AuthController extends Controller
         return back()->withErrors(['email' => 'Invalid credentials'])->onlyInput('email');
     }
 
+    // Afficher page register
     public function showRegister()
     {
         return view('pages.register');
     }
 
+    // Traitement register
     public function register(Request $request)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', 'min:8'],
+            'phone'    => ['nullable', 'string', 'max:20'],
+            'country'  => ['nullable', 'string', 'max:100'],
+            'profile_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
+        // Gestion image de profil
+        $imagePath = null;
+        if ($request->hasFile('profile_image')) {
+            $imagePath = $request->file('profile_image')->store('profiles', 'public');
+        }
+
         $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'name'          => $data['name'],
+            'email'         => $data['email'],
+            'password'      => Hash::make($data['password']),
+            'phone'         => $data['phone'] ?? null,
+            'country'       => $data['country'] ?? null,
+            'profile_image' => $imagePath,
         ]);
 
         Auth::login($user);
@@ -59,6 +80,7 @@ class AuthController extends Controller
         return redirect()->intended(route('home'));
     }
 
+    // Déconnexion
     public function logout(Request $request)
     {
         Auth::logout();

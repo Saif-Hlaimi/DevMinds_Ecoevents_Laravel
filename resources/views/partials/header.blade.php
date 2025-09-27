@@ -30,7 +30,7 @@
                             <ul class="sub-menu">
                                 <li><a href="{{ route('projects') }}">Projects</a></li>
                                 <li><a href="{{ route('donations') }}">Donations</a></li>
-                                <li><a href="{{ route('events') }}">Events</a></li>
+                        <li><a href="{{ route('events.index') }}">Events</a></li>                        <li><a href="{{ route('contact') }}">Contact Us</a></li>
                                 <li><a href="{{ route('team') }}">Team</a></li>
                                 <li><a href="{{ route('shop') }}">Shop</a></li>
                                 <li><a href="{{ route('cart') }}">Cart</a></li>
@@ -41,8 +41,7 @@
                             </ul>
                         </li>
                         <li><a href="{{ route('groups.index') }}">Groups</a></li>
-                        <li><a href="{{ route('blog') }}">Blog</a></li>
-                        <li><a href="{{ route('contact') }}">Contact Us</a></li>
+                        <li><a href="{{ route('events.index') }}">Events</a></li>                        <li><a href="{{ route('contact') }}">Contact Us</a></li>
                         @auth
                             <li>
                                 <a href="{{ route('notifications.index') }}" class="position-relative">
