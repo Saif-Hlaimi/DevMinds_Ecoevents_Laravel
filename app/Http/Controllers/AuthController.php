@@ -6,14 +6,11 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-<<<<<<< Updated upstream
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
-=======
 use Illuminate\Support\Facades\Storage;
 
->>>>>>> Stashed changes
 class AuthController extends Controller
 {
     // Afficher page login
