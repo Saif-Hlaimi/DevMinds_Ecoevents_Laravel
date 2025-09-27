@@ -12,6 +12,7 @@ use App\Http\Controllers\DonationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\EventController;
 
+use Laravel\Socialite\Facades\Socialite;
 
 // Render Blade homepage (Vite + Blade)
 Route::get('/', function () {
@@ -58,6 +59,14 @@ Route::middleware('guest')->group(function () {
     Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
     Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
+    // --- Google OAuth routes ---
+    Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
+    Route::get('/auth/google-callback', [AuthController::class, 'handleGoogleCallback']);
+
+    // --- Facebook OAuth routes ---
+    Route::get('/auth/facebook', [AuthController::class, 'redirectToFacebook'])->name('facebook.login');
+    Route::get('/auth/facebook-callback', [AuthController::class, 'handleFacebookCallback']);
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');

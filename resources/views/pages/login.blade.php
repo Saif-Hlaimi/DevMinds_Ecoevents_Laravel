@@ -84,13 +84,13 @@
 
 								{{-- OAuth --}}
 								<div class="login__with auth-oauth">
-									<a href="#0" class="d-flex align-items-center justify-content-center gap-2 py-2 btn btn-light">
-										<img src="{{ asset('assets/images/icon/google.svg') }}" alt=""> Continue with Google
-									</a>
-									<a class="mt-15 d-flex align-items-center justify-content-center gap-2 py-2 btn btn-light" href="#0">
-										<img src="{{ asset('assets/images/icon/facebook.svg') }}" alt=""> Continue with Facebook
-									</a>
-								</div>
+										<a href="{{ route('google.login') }}" class="d-flex align-items-center justify-content-center gap-2 py-2 mb-2 btn btn-outline-danger">
+											<img src="{{ asset('assets/images/icon/google.svg') }}" alt="" width="20"> Continue with Google
+										</a>
+										<a href="{{ route('facebook.login') }}" class="d-flex align-items-center justify-content-center gap-2 py-2 btn btn-primary">
+											<i class="fa-brands fa-facebook-f"></i> Continue with Facebook
+										</a>
+									</div>
 							</div>
 						</div> {{-- fin col formulaire --}}
 						
@@ -100,4 +100,4 @@
 		</div>
 	</div>
 </section>
-@endsection
+@endsectionF
