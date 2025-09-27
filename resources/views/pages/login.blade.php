@@ -33,7 +33,7 @@
 												<label class="d-flex align-items-center gap-2 mb-0">
 													<input type="checkbox" name="remember" value="1"> <span>Remember me</span>
 												</label>
-												<a class="text-decoration-underline" href="#0">Forgot password?</a>
+												<a class="text-decoration-underline" href="{{ route('password.request') }}">Forgot password?</a>
 											</div>
 											<button class="auth-btn w-100 mt-2" type="submit">Sign in</button>
 										</form>

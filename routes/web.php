@@ -7,6 +7,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\GroupPostController;
+use App\Http\Controllers\DonationCauseController;
+use App\Http\Controllers\DonationController;
 use App\Http\Controllers\NotificationController;
 
 
@@ -24,7 +26,7 @@ Route::view('/contact', 'pages.contact')->name('contact');
 Route::view('/projects', 'pages.projects')->name('projects');
 Route::view('/project', 'pages.project-single')->name('project.single');
 
-Route::view('/donations', 'pages.donations')->name('donations');
+Route::get('/donations', fn() => redirect()->route('donation-causes.index'))->name('donations');
 Route::view('/donation', 'pages.donation-single')->name('donation.single');
 
 Route::view('/blog', 'pages.blog')->name('blog');
@@ -50,6 +52,11 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.store');
+       
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
@@ -62,7 +69,9 @@ Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
 Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create')->middleware('auth');
 Route::post('/groups', [GroupController::class, 'store'])->name('groups.store')->middleware('auth');
 Route::get('/groups/{slug}', [GroupController::class, 'show'])->name('groups.show');
-
+// Donations
+Route::resource('donation-causes', DonationCauseController::class);
+Route::post('donations', [DonationController::class, 'store'])->name('donations.store')->middleware('auth');
 // Membership
 Route::post('/groups/{slug}/join', [MembershipController::class, 'join'])->name('groups.join')->middleware('auth');
 Route::post('/groups/{slug}/leave', [MembershipController::class, 'leave'])->name('groups.leave')->middleware('auth');
