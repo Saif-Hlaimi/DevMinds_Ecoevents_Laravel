@@ -30,11 +30,23 @@
 								<div class="form-area">
 									<form action="{{ route('login.attempt') }}" method="POST" novalidate>
 										@csrf
+<!-- Auth hero start -->
+<section class="auth-hero pt-130 pb-130">
+    <div class="container position-relative" style="z-index:2;">
+        <div class="row justify-content-center">
+            <div class="col-xl-10">
+                <div class="p-0 p-md-2">
+                    <div class="row g-0 auth-card overflow-hidden">
+                        <!-- Colonne image -->
+                        <div class="col-lg-6 d-none d-lg-block">
+                            <div class="h-100 w-100" style="background: url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200&auto=format&fit=crop') center/cover no-repeat; min-height:380px;"></div>
+                        </div>
 
-										{{-- Erreurs globales --}}
-										@if ($errors->any())
-											<div class="alert alert-danger py-2 px-3 mb-3">{{ $errors->first() }}</div>
-										@endif
+                        <!-- Colonne formulaire -->
+                        <div class="col-lg-6 bg-white" style="border-radius: 0 18px 18px 0;">
+                            <div class="p-4 p-md-5">
+                                <h2 class="mb-10">Welcome Back</h2>
+                                <p class="text-muted mb-30">Sign in with your EcoEvents account.</p>
 
 										{{-- Email --}}
 										<div class="position-relative mb-3">
@@ -46,41 +58,45 @@
 											       required 
 											       class="form-control ps-5">
 										</div>
+                                <div class="form-area">
+                                    <form action="{{ route('login.attempt') }}" method="POST" novalidate>
+                                        @csrf
+                                        {{-- Erreurs globales --}}
+                                        @if ($errors->any())
+                                            <div class="alert alert-danger py-2 px-3 mb-3">{{ $errors->first() }}</div>
+                                        @endif
 
-										{{-- Password --}}
-										<div class="position-relative mb-3">
-											<i class="fa-solid fa-lock position-absolute" 
-											   style="left:14px;top:50%;transform:translateY(-50%);color:#6b7280"></i>
-											<input type="password" name="password" 
-											       placeholder="Password" 
-											       required 
-											       class="form-control ps-5">
-										</div>
+                                        {{-- Email ou Téléphone --}}
+                                        <div class="position-relative mb-3">
+                                            <i class="fa-regular fa-envelope position-absolute" style="left:14px;top:50%;transform:translateY(-50%);color:#6b7280"></i>
+                                            <input type="text" name="login" value="{{ old('login') }}" placeholder="Email or Phone" required class="form-control ps-5">
+                                        </div>
 
-										{{-- Remember me + Forgot password --}}
-										<div class="d-flex align-items-center justify-content-between mb-2">
-											<label class="d-flex align-items-center gap-2 mb-0">
-												<input type="checkbox" name="remember" value="1"> <span>Remember me</span>
-											</label>
-											@if (Route::has('password.request'))
-												<a class="text-decoration-underline" href="{{ route('password.request') }}">
-													Forgot password?
-												</a>
-											@endif
-										</div>
+                                        {{-- Password --}}
+                                        <div class="position-relative mb-3">
+                                            <i class="fa-solid fa-lock position-absolute" style="left:14px;top:50%;transform:translateY(-50%);color:#6b7280"></i>
+                                            <input type="password" name="password" placeholder="Password" required class="form-control ps-5">
+                                        </div>
 
-										{{-- Bouton --}}
-										<button class="auth-btn w-100 mt-2 btn btn-primary" type="submit">Sign in</button>
-									</form>
+                                        {{-- Remember me + Forgot password --}}
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <label class="d-flex align-items-center gap-2 mb-0">
+                                                <input type="checkbox" name="remember" value="1"> <span>Remember me</span>
+                                            </label>
+                                            @if (Route::has('password.request'))
+                                                <a class="text-decoration-underline" href="{{ route('password.request') }}">Forgot password?</a>
+                                            @endif
+                                        </div>
 
-									{{-- Lien Register --}}
-									<div class="text-center mt-3">
-										<span class="text-muted">No account?</span> 
-										<a href="{{ route('register') }}" class="text-decoration-underline">Create one</a>
-									</div>
+                                        {{-- Bouton --}}
+                                        <button class="auth-btn w-100 mt-2 btn btn-primary" type="submit">Sign in</button>
+                                    </form>
 
-									<span class="or pt-30 pb-40 d-block text-center">OR</span>
-								</div>
+                                    {{-- Lien Register --}}
+                                    <div class="text-center mt-3">
+                                        <span class="text-muted">No account?</span> 
+                                        <a href="{{ route('register') }}" class="text-decoration-underline">Create one</a>
+                                    </div>
 
 								{{-- OAuth --}}
 								<div class="login__with auth-oauth">

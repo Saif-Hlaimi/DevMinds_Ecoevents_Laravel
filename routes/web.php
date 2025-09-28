@@ -115,3 +115,8 @@ Route::post('/events', [EventController::class, 'store'])->name('events.store');
 Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
 Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
 Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+Route::post('/events/{event}/comment', [EventController::class, 'storeComment'])
+    ->name('comments.store')->middleware('auth');
+
+Route::delete('/comments/{comment}', [EventController::class, 'destroyComment'])
+    ->name('comments.destroy')->middleware('auth');

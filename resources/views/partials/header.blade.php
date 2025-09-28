@@ -60,12 +60,15 @@
                                 </a>
                                 <ul class="sub-menu">
                                     <li><a href="{{ route('profile') }}">View profile</a></li>
-                                    <li>
-                                        <form action="{{ route('logout') }}" method="POST">
-                                            @csrf
-                                            <button type="submit" class="btn btn-link p-0 text-start">Logout</button>
-                                        </form>
-                                    </li>
+                                   <li>
+    <form action="{{ route('logout') }}" method="POST">
+        @csrf
+        <button type="submit" class="dropdown-item text-start w-100">
+              Logout
+        </button>
+    </form>
+</li>
+
                                 </ul>
                             </li>
                         @else
@@ -81,12 +84,11 @@
 <div id="targetElement" class="side_bar slideInRight side_bar_hidden">
     <div class="side_bar_overlay"></div>
     <div class="logo mb-30">
-        <img src="{{ asset('assets/images/logo/logo-mix.svg') }}" alt="logo">
+        <img src="{{ asset('assets/images/logo/images.png') }}" alt="logo">
     </div>
     <p class="text-justify">The foundation of any road is the subgrade, which provides a stable base for the road layers above.</p>
     <ul class="info py-4 mt-65 bor-top bor-bottom">
-        <li><i class="fa-solid primary-color fa-location-dot"></i> <a href="#0">example@example.com</a></li>
-        <li class="py-4"><i class="fa-solid primary-color fa-phone-volume"></i> <a href="tel:+912659302003">+91 2659 302 003</a></li>
+        <li><i class="fa-solid primary-color fa-location-dot"></i> <a href="#0">ecoevents@gmail.com</a></li>
         <li><i class="fa-solid primary-color fa-paper-plane"></i> <a href="#0">info.company@gmail.com</a></li>
     </ul>
     <div class="social-icon mt-65">

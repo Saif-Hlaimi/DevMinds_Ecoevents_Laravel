@@ -14,6 +14,8 @@ use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Exception;
 
+use Illuminate\Support\Facades\Storage;
+
 class AuthController extends Controller
 {
     /**
