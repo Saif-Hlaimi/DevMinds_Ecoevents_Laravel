@@ -30,18 +30,19 @@
                             <ul class="sub-menu">
                                 <li><a href="{{ route('projects') }}">Projects</a></li>
                                 <li><a href="{{ route('donations') }}">Donations</a></li>
-                        <li><a href="{{ route('events.index') }}">Events</a></li>                        <li><a href="{{ route('contact') }}">Contact Us</a></li>
+                                <li><a href="{{ route('events.index') }}">Events</a></li>
                                 <li><a href="{{ route('team') }}">Team</a></li>
                                 <li><a href="{{ route('shop') }}">Shop</a></li>
                                 <li><a href="{{ route('cart') }}">Cart</a></li>
                                 <li><a href="{{ route('checkout') }}">Checkout</a></li>
                                 <li><a href="{{ route('faq') }}">FAQ</a></li>
-                                
                                 <li><a href="{{ route('error.page') }}">404 Error</a></li>
                             </ul>
                         </li>
                         <li><a href="{{ route('groups.index') }}">Groups</a></li>
-                        <li><a href="{{ route('events.index') }}">Events</a></li>                        <li><a href="{{ route('contact') }}">Contact Us</a></li>
+                        <li><a href="{{ route('events.index') }}">Events</a></li>
+                        <li><a href="{{ route('donations') }}">Donations</a></li>
+                        <li><a href="{{ route('contact') }}">Contact Us</a></li>
                         @auth
                             <li>
                                 <a href="{{ route('notifications.index') }}" class="position-relative">
@@ -73,20 +74,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="header-one__item d-none d-xl-block">
-                <ul class="header-wrapper header-one__info bor-left">
-                    <li class="menu-btn">
-                        <a href="{{ route('contact') }}"><span>Get a quote</span> <i class="fa-solid fa-angles-right"></i></a>
-                    </li>
-                    <li class="menu_info bg-image ms-0" data-background="{{ asset('assets/images/header/header-info-bg.png') }}">
-                        <i class="fa-solid call_ico fa-phone-volume"></i>
-                        <div class="call_info">
-                            <span>Call Any Time</span>
-                            <a class="d-block p-0" href="tel:+912659302003">+21626590302</a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
+          
         </div>
     </div>
 </header>
