@@ -23,6 +23,7 @@
                     </div>
                     <ul class="main-menu">
                         <li><a href="{{ route('home') }}">Home</a></li>
+                        <li><a href="{{ route('dashboard') }}">Dashboard</a></li>
                         <li><a href="{{ route('about') }}">About Us</a></li>
                         <li><a href="{{ route('services') }}">Services</a></li>
                         <li>
