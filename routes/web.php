@@ -13,6 +13,86 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\EventController;
 
 use Laravel\Socialite\Facades\Socialite;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\CRMContactController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\EmailController;
+use App\Http\Controllers\Admin\ChatController;
+use App\Http\Controllers\Admin\CalendarController;
+use App\Http\Controllers\Admin\UserAdminController;
+use App\Http\Controllers\Admin\EventAdminController;
+use App\Http\Controllers\Admin\DonationAdminController;
+use App\Http\Controllers\Admin\GroupAdminController;
+
+// Admin dashboard (Fabkin analytics) + CRUD pages
+Route::middleware(['auth','admin.only'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::prefix('dashboard')->group(function () {
+        // Email
+        Route::get('/email', [EmailController::class, 'index'])->name('dashboard.email');
+        Route::post('/email', [EmailController::class, 'store'])->name('dashboard.email.store');
+        Route::post('/email/{email}/read', [EmailController::class, 'markRead'])->name('dashboard.email.read');
+        Route::delete('/email/{email}', [EmailController::class, 'destroy'])->name('dashboard.email.destroy');
+
+        // Chat
+        Route::get('/chat', [ChatController::class, 'index'])->name('dashboard.chat');
+        Route::post('/chat', [ChatController::class, 'store'])->name('dashboard.chat.store');
+        Route::delete('/chat/{message}', [ChatController::class, 'destroy'])->name('dashboard.chat.destroy');
+
+        // Calendar (uses existing Event model)
+        Route::get('/calendar', [CalendarController::class, 'index'])->name('dashboard.calendar');
+        Route::post('/calendar', [CalendarController::class, 'store'])->name('dashboard.calendar.store');
+        Route::delete('/calendar/{event}', [CalendarController::class, 'destroy'])->name('dashboard.calendar.destroy');
+
+        // E-commerce
+        Route::get('/ecommerce/products', [ProductController::class, 'index'])->name('dashboard.ecommerce.products');
+        Route::post('/ecommerce/products', [ProductController::class, 'store'])->name('dashboard.ecommerce.products.store');
+        Route::put('/ecommerce/products/{product}', [ProductController::class, 'update'])->name('dashboard.ecommerce.products.update');
+        Route::delete('/ecommerce/products/{product}', [ProductController::class, 'destroy'])->name('dashboard.ecommerce.products.destroy');
+
+        Route::get('/ecommerce/orders', [OrderController::class, 'index'])->name('dashboard.ecommerce.orders');
+        Route::post('/ecommerce/orders', [OrderController::class, 'store'])->name('dashboard.ecommerce.orders.store');
+        Route::put('/ecommerce/orders/{order}', [OrderController::class, 'update'])->name('dashboard.ecommerce.orders.update');
+        Route::delete('/ecommerce/orders/{order}', [OrderController::class, 'destroy'])->name('dashboard.ecommerce.orders.destroy');
+        Route::post('/ecommerce/orders/{order}/items', [OrderController::class, 'addItem'])->name('dashboard.ecommerce.orders.items.add');
+        Route::delete('/ecommerce/orders/{order}/items/{item}', [OrderController::class, 'removeItem'])->name('dashboard.ecommerce.orders.items.remove');
+
+        // Invoice (static page for now)
+        Route::view('/invoice', 'admin.invoice-detail')->name('dashboard.invoice.detail');
+
+        // CRM
+        Route::get('/crm/contacts', [CRMContactController::class, 'index'])->name('dashboard.crm.contacts');
+        Route::post('/crm/contacts', [CRMContactController::class, 'store'])->name('dashboard.crm.contacts.store');
+        Route::put('/crm/contacts/{contact}', [CRMContactController::class, 'update'])->name('dashboard.crm.contacts.update');
+        Route::delete('/crm/contacts/{contact}', [CRMContactController::class, 'destroy'])->name('dashboard.crm.contacts.destroy');
+
+        // Academy
+        Route::view('/academy/courses', 'admin.academy-courses')->name('dashboard.academy.courses');
+
+        // CMS
+        Route::view('/cms/blog', 'admin.cms-blog')->name('dashboard.cms.blog');
+
+    // Admin: Users, Events, Donations (admin-only)
+    Route::middleware('admin.only')->group(function () {
+            Route::get('/admin/users', [UserAdminController::class, 'index'])->name('dashboard.admin.users');
+            Route::put('/admin/users/{user}', [UserAdminController::class, 'update'])->name('dashboard.admin.users.update');
+            Route::delete('/admin/users/{user}', [UserAdminController::class, 'destroy'])->name('dashboard.admin.users.destroy');
+
+            Route::get('/admin/events', [EventAdminController::class, 'index'])->name('dashboard.admin.events');
+            Route::put('/admin/events/{event}', [EventAdminController::class, 'update'])->name('dashboard.admin.events.update');
+            Route::delete('/admin/events/{event}', [EventAdminController::class, 'destroy'])->name('dashboard.admin.events.destroy');
+
+            Route::get('/admin/donations', [DonationAdminController::class, 'index'])->name('dashboard.admin.donations');
+            Route::delete('/admin/donations/{donation}', [DonationAdminController::class, 'destroy'])->name('dashboard.admin.donations.destroy');
+
+            // Admin: Groups
+            Route::get('/admin/groups', [GroupAdminController::class, 'index'])->name('dashboard.admin.groups');
+            Route::put('/admin/groups/{group}', [GroupAdminController::class, 'update'])->name('dashboard.admin.groups.update');
+            Route::delete('/admin/groups/{group}', [GroupAdminController::class, 'destroy'])->name('dashboard.admin.groups.destroy');
+        });
+    });
+});
 
 // Render Blade homepage (Vite + Blade)
 Route::get('/', function () {
@@ -115,3 +195,8 @@ Route::post('/events', [EventController::class, 'store'])->name('events.store');
 Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
 Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
 Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+Route::post('/events/{event}/comment', [EventController::class, 'storeComment'])
+    ->name('comments.store')->middleware('auth');
+
+Route::delete('/comments/{comment}', [EventController::class, 'destroyComment'])
+    ->name('comments.destroy')->middleware('auth');

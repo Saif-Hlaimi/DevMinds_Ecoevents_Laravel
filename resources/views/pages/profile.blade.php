@@ -81,13 +81,13 @@
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
                             <button type="submit" class="btn-two"><span>Logout</span></button>
-                        </form> <br> 
+                        </form>
 
                       <form action="{{ route('profile.destroy') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your profile?');">
     @csrf
     @method('DELETE')
     <button type="submit" style="background-color: red; width: 150px; height: 40px; border-radius: 5px; font-weight: bold;">
-        <span>Delete Profile</span>
+        <span style="color: white;">Delete Profile</span>
     </button>
 </form>
 

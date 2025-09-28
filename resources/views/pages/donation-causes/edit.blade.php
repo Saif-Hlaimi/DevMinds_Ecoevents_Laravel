@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Create Donation Cause')
+@section('title', 'Edit Donation Cause - EcoEvents')
 @section('content')
     <!-- Auth hero start (modernized) -->
     <section class="auth-hero pt-130 pb-130">
@@ -13,11 +13,12 @@
                             </div>
                             <div class="col-lg-6 bg-white" style="border-radius: 0 18px 18px 0;">
                                 <div class="p-4 p-md-5">
-                                    <h2 class="mb-10">Create a New Donation Cause</h2>
-                                    <p class="text-muted mb-30">Fill in the details to create a new donation cause for EcoEvents.</p>
+                                    <h2 class="mb-10">Edit Donation Cause</h2>
+                                    <p class="text-muted mb-30">Update the details for this donation cause in EcoEvents.</p>
                                     <div class="form-area">
-                                        <form action="{{ route('donation-causes.store') }}" method="POST" enctype="multipart/form-data" novalidate>
+                                        <form action="{{ route('donation-causes.update', $donationCause->id) }}" method="POST" enctype="multipart/form-data" novalidate>
                                             @csrf
+                                            @method('PUT')
                                             @if (session('status'))
                                                 <div class="alert alert-success py-2 px-3 mb-3">{{ session('status') }}</div>
                                             @endif
@@ -32,14 +33,14 @@
                                             @endif
                                             <div class="position-relative mb-3">
                                                 <i class="fa-solid fa-hand-holding-heart position-absolute" style="left:14px;top:50%;transform:translateY(-50%);color:#6b7280"></i>
-                                                <input type="text" name="title" value="{{ old('title') }}" placeholder="Cause Title" required class="form-control" style="padding-left:42px;">
+                                                <input type="text" name="title" value="{{ old('title', $donationCause->title) }}" placeholder="Cause Title" required class="form-control" style="padding-left:42px;">
                                                 @error('title')
                                                     <span class="text-danger mt-1 d-block">{{ $message }}</span>
                                                 @enderror
                                             </div>
                                             <div class="position-relative mb-3">
                                                 <i class="fa-solid fa-info-circle position-absolute" style="left:14px;top:50%;transform:translateY(-50%);color:#6b7280"></i>
-                                                <textarea name="description" placeholder="Cause Description" required class="form-control" style="padding-left:42px; height:150px; background-color: #ffffff !important;">{{ old('description') }}</textarea>
+                                                <textarea name="description" placeholder="Cause Description" required class="form-control" style="padding-left:42px; height:150px; background-color: #ffffff !important;">{{ old('description', $donationCause->description) }}</textarea>
                                                 @error('description')
                                                     <span class="text-danger mt-1 d-block">{{ $message }}</span>
                                                 @enderror
@@ -47,29 +48,34 @@
                                             <div class="position-relative mb-3">
                                                 <i class="fa-solid fa-image position-absolute" style="left:14px;top:50%;transform:translateY(-50%);color:#6b7280"></i>
                                                 <div class="input-group">
-                                                    <input type="text" class="form-control" placeholder="Choose Image" style="padding-left:42px;" readonly>
+                                                    <input type="text" class="form-control" placeholder="Choose Image" style="padding-left:42px;" readonly value="{{ $donationCause->image ? basename($donationCause->image) : '' }}">
                                                     <input type="file" name="image" accept="image/*" class="d-none" id="image-input">
                                                     <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('image-input').click()">Browse</button>
                                                 </div>
+                                                @if($donationCause->image)
+                                                    <div class="mt-2">
+                                                        <img src="{{ asset('storage/' . $donationCause->image) }}" alt="Current Image" style="max-width: 200px;">
+                                                    </div>
+                                                @endif
                                                 @error('image')
                                                     <span class="text-danger mt-1 d-block">{{ $message }}</span>
                                                 @enderror
                                             </div>
                                             <div class="position-relative mb-3">
                                                 <i class="fa-solid fa-dollar-sign position-absolute" style="left:14px;top:50%;transform:translateY(-50%);color:#6b7280"></i>
-                                                <input type="number" name="goal_amount" step="0.01" min="0.01" value="{{ old('goal_amount') }}" placeholder="Goal Amount" required class="form-control" style="padding-left:42px;">
+                                                <input type="number" name="goal_amount" step="0.01" min="0.01" value="{{ old('goal_amount', $donationCause->goal_amount) }}" placeholder="Goal Amount" required class="form-control" style="padding-left:42px;">
                                                 @error('goal_amount')
                                                     <span class="text-danger mt-1 d-block">{{ $message }}</span>
                                                 @enderror
                                             </div>
                                             <div class="position-relative mb-3">
                                                 <i class="fa-solid fa-globe position-absolute" style="left:14px;top:50%;transform:translateY(-50%);color:#6b7280"></i>
-                                                <input type="text" name="sdg" value="{{ old('sdg') }}" placeholder="Sustainable Development Goal (e.g., SDG1)" required class="form-control" style="padding-left:42px;">
+                                                <input type="text" name="sdg" value="{{ old('sdg', $donationCause->sdg) }}" placeholder="Sustainable Development Goal (e.g., SDG1)" required class="form-control" style="padding-left:42px;">
                                                 @error('sdg')
                                                     <span class="text-danger mt-1 d-block">{{ $message }}</span>
                                                 @enderror
                                             </div>
-                                            <button class="auth-btn w-100 mt-2" type="submit">Create Cause</button>
+                                            <button class="auth-btn w-100 mt-2" type="submit">Update Cause</button>
                                         </form>
                                         <div class="text-center mt-3">
                                             <a href="{{ route('donation-causes.index') }}" class="text-decoration-underline">Back to Donation Causes</a>
