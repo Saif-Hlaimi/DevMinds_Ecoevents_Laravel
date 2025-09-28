@@ -16,10 +16,23 @@
 	<!-- Shop page area start here -->
 	<div class="shop pt-130 pb-130">
 		<div class="container">
+			<div class="row mb-4">
+				<div class="col-12">
+					<div class="d-flex justify-content-between align-items-center">
+						<h3>Nos produits</h3>
+						@auth
+							<a href="{{ route('products.create') }}" class="btn btn-primary">
+								<i class="fa-solid fa-plus me-2"></i>Ajouter un produit
+							</a>
+						@endauth
+					</div>
+				</div>
+			</div>
+
 			<div class="row g-4">
 				<div class="col-lg-8">
 					<div class="top-bar sub-bg mb-4 d-flex flex-wrap justify-content-between align-items-center main-bg radius10 px-4 py-3">
-						<span>Showing 1–12 of 15 results</span>
+						<span>Showing 1–12 of {{ $products->total() }} results</span>
 						<select name="select" id="select">
 							<option value="select">Short by latest</option>
 							<option value="select">Short by Ubdate</option>
@@ -29,44 +42,65 @@
 					<div class="product light">
 						<div class="container">
 							<div class="row g-4">
-								@php
-									$products = [
-										['img' => 'product1.png', 'name' => 'Wood Bowls', 'old' => '$1099', 'price' => '$999'],
-										['img' => 'product2.png', 'name' => 'Bamboo Trays', 'old' => '$259', 'price' => '$199'],
-										['img' => 'product3.png', 'name' => 'Wood Frames', 'old' => '$299', 'price' => '$258'],
-										['img' => 'product4.png', 'name' => 'Bamboo Utensils', 'old' => '$459', 'price' => '$358'],
-										['img' => 'product5.png', 'name' => 'Wood Coasters', 'old' => '$1099', 'price' => '$999'],
-										['img' => 'product6.png', 'name' => 'Bamboo Placemats', 'old' => '$259', 'price' => '$199'],
-										['img' => 'product7.png', 'name' => 'Wood Boxes', 'old' => '$299', 'price' => '$258'],
-										['img' => 'product8.png', 'name' => 'Bamboo Chopsticks', 'old' => '$1099', 'price' => '$999'],
-										['img' => 'product9.png', 'name' => 'Wood Sculptures', 'old' => '$259', 'price' => '$199'],
-										['img' => 'product10.png', 'name' => 'Bamboo Skewers', 'old' => '$299', 'price' => '$258'],
-										['img' => 'product11.png', 'name' => 'Wood Mirrors', 'old' => '$259', 'price' => '$199'],
-										['img' => 'product12.png', 'name' => 'Bamboo Rugs', 'old' => '$299', 'price' => '$258'],
-									];
-								@endphp
-								@foreach ($products as $p)
+								@forelse ($products as $product)
 									<div class="col-md-4">
 										<div class="item">
-											<img src="{{ asset('assets/images/product/'.$p['img']) }}" alt="image">
+											@if($product->image_path)
+												<img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}">
+											@else
+												<img src="{{ asset('assets/images/product/product1.png') }}" alt="{{ $product->name }}">
+											@endif
 											<div class="content">
-												<h4><a href="{{ route('product') }}">{{ $p['name'] }}</a></h4>
-												<del>{{ $p['old'] }}</del> <span>- {{ $p['price'] }}</span>
+												<h4><a href="{{ route('products.show', $product) }}">{{ $product->name }}</a></h4>
+												<span class="text-primary fw-bold">{{ $product->formatted_price }}</span>
+												@if($product->quantity > 0)
+													<small class="text-success d-block">En stock</small>
+												@else
+													<small class="text-danger d-block">Rupture</small>
+												@endif
 											</div>
 											<div class="icon">
 												<a href="#0"><i class="fa-solid fa-heart"></i></a>
-												<a href="{{ route('cart') }}" class="active"><i class="fa-solid fa-cart-shopping"></i></a>
+												@if($product->quantity > 0)
+													<a href="{{ route('cart') }}" class="active"><i class="fa-solid fa-cart-shopping"></i></a>
+												@else
+													<a href="#0" class="disabled"><i class="fa-solid fa-cart-shopping"></i></a>
+												@endif
 											</div>
 										</div>
 									</div>
-								@endforeach
+								@empty
+									<div class="col-12 text-center py-5">
+										<h5 class="text-muted">Aucun produit disponible</h5>
+										<p class="text-muted">Revenez bientôt pour découvrir nos nouveaux produits.</p>
+									</div>
+								@endforelse
 							</div>
-							<div class="pt-30 bor-top mt-65">
-								<a class="blog-pegi" href="#0">01</a>
-								<a class="blog-pegi active" href="#0">02</a>
-								<a class="blog-pegi" href="#0">03</a>
-								<a href="#0"><i class="fa-solid blog_pegi_arrow fa-arrow-right-long"></i></a>
-							</div>
+							
+							@if($products->hasPages())
+								<div class="pt-30 bor-top mt-65">
+									@if($products->onFirstPage())
+										<span class="blog-pegi disabled">Précédent</span>
+									@else
+										<a class="blog-pegi" href="{{ $products->previousPageUrl() }}">Précédent</a>
+									@endif
+
+									@foreach(range(1, $products->lastPage()) as $page)
+										<a class="blog-pegi {{ $page == $products->currentPage() ? 'active' : '' }}" 
+										   href="{{ $products->url($page) }}">{{ $page }}</a>
+									@endforeach
+
+									@if($products->hasMorePages())
+										<a class="blog-pegi" href="{{ $products->nextPageUrl() }}">
+											<i class="fa-solid blog_pegi_arrow fa-arrow-right-long"></i>
+										</a>
+									@else
+										<span class="blog-pegi disabled">
+											<i class="fa-solid blog_pegi_arrow fa-arrow-right-long"></i>
+										</span>
+									@endif
+								</div>
+							@endif
 						</div>
 					</div>
 				</div>
@@ -90,28 +124,34 @@
 							</ul>
 							<h4 class="mb-30">Popular Products</h4>
 							@php
-								$popular = [
-									['img' => 'product1.png', 'name' => 'Wood Shelves', 'price' => '$299'],
-									['img' => 'product2.png', 'name' => 'Bamboo Pendants', 'price' => '$299'],
-									['img' => 'product3.png', 'name' => 'Wood Planters', 'price' => '$299'],
-								];
+								$popular = $products->take(3);
 							@endphp
-							@foreach ($popular as $pp)
+							@foreach($popular as $pp)
 								<div class="recent-post p-0 bor-bottom pb-4 mb-4 sub-bg">
-									<div class="img"><img src="{{ asset('assets/images/product/'.$pp['img']) }}" alt="image"></div>
+									<div class="img">
+										@if($pp->image_path)
+											<img src="{{ asset('storage/' . $pp->image_path) }}" alt="{{ $pp->name }}">
+										@else
+											<img src="{{ asset('assets/images/product/product1.png') }}" alt="{{ $pp->name }}">
+										@endif
+									</div>
 									<div class="con">
-										<h5><a href="{{ route('product') }}">{{ $pp['name'] }}</a></h5>
-										<span>{{ $pp['price'] }}</span>
+										<h5><a href="{{ route('products.show', $pp) }}">{{ $pp->name }}</a></h5>
+										<span>{{ $pp->formatted_price }}</span>
 									</div>
 								</div>
 							@endforeach
 							<h4 class="mb-30 mt-40">Hot Items</h4>
 							<div class="swiper hot-items__slider">
 								<div class="swiper-wrapper">
-									@foreach ([8,9,10] as $i)
+									@foreach($products->take(3) as $hotProduct)
 										<div class="swiper-slide">
 											<div class="image">
-												<img src="{{ asset('assets/images/product/product'.$i.'.png') }}" alt="image">
+												@if($hotProduct->image_path)
+													<img src="{{ asset('storage/' . $hotProduct->image_path) }}" alt="{{ $hotProduct->name }}">
+												@else
+													<img src="{{ asset('assets/images/product/product1.png') }}" alt="{{ $hotProduct->name }}">
+												@endif
 											</div>
 										</div>
 									@endforeach

@@ -11,11 +11,12 @@ use App\Http\Controllers\DonationCauseController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\ProductController; // Ajout important
 
 use Laravel\Socialite\Facades\Socialite;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CRMContactController;
-use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\EmailController;
 use App\Http\Controllers\Admin\ChatController;
@@ -46,10 +47,10 @@ Route::middleware(['auth','admin.only'])->group(function () {
         Route::delete('/calendar/{event}', [CalendarController::class, 'destroy'])->name('dashboard.calendar.destroy');
 
         // E-commerce
-        Route::get('/ecommerce/products', [ProductController::class, 'index'])->name('dashboard.ecommerce.products');
-        Route::post('/ecommerce/products', [ProductController::class, 'store'])->name('dashboard.ecommerce.products.store');
-        Route::put('/ecommerce/products/{product}', [ProductController::class, 'update'])->name('dashboard.ecommerce.products.update');
-        Route::delete('/ecommerce/products/{product}', [ProductController::class, 'destroy'])->name('dashboard.ecommerce.products.destroy');
+        Route::get('/ecommerce/products', [AdminProductController::class, 'index'])->name('dashboard.ecommerce.products');
+        Route::post('/ecommerce/products', [AdminProductController::class, 'store'])->name('dashboard.ecommerce.products.store');
+        Route::put('/ecommerce/products/{product}', [AdminProductController::class, 'update'])->name('dashboard.ecommerce.products.update');
+        Route::delete('/ecommerce/products/{product}', [AdminProductController::class, 'destroy'])->name('dashboard.ecommerce.products.destroy');
 
         Route::get('/ecommerce/orders', [OrderController::class, 'index'])->name('dashboard.ecommerce.orders');
         Route::post('/ecommerce/orders', [OrderController::class, 'store'])->name('dashboard.ecommerce.orders.store');
@@ -120,7 +121,10 @@ Route::view('/event', 'pages.event-single')->name('event.single');
 Route::view('/team', 'pages.team')->name('team');
 Route::view('/team-member', 'pages.team-single')->name('team.single');
 
-Route::view('/shop', 'pages.shop')->name('shop');
+// Routes pour les produits (AJOUT CRITIQUE)
+Route::get('/shop', [ProductController::class, 'shop'])->name('shop');
+Route::resource('products', ProductController::class);
+
 Route::view('/product', 'pages.product')->name('product');
 Route::view('/cart', 'pages.cart')->name('cart');
 Route::view('/checkout', 'pages.checkout')->name('checkout');
