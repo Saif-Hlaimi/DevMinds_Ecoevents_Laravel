@@ -2,6 +2,7 @@ EcoEvents
 
 EcoEvents is an online platform dedicated to organizing and promoting events focused on ecology and sustainable development. Developed as part of a project at Université Esprit, it supports citizen and associative initiatives by facilitating collective participation in actions aimed at raising awareness and mobilizing for environmental protection.
 Built with Laravel for the backend and Blade with Vite for the frontend, this application provides comprehensive management of users, events, donations, groups, and eco-friendly products, fostering an engaged community for a greener future.
+
 Developed by: Saif Hlaimi, Walid Khrouf, Feryel Yahyeoui, Mohamed Yessine Mighri, Elaa Sboui
 
 
