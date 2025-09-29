@@ -23,7 +23,7 @@ use App\Http\Controllers\Admin\ChatController;
 use App\Http\Controllers\Admin\CalendarController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Admin\EventAdminController;
-use App\Http\Controllers\Admin\DonationAdminController;
+use App\Http\Controllers\Admin\DonationCauseAdminController;
 use App\Http\Controllers\Admin\GroupAdminController;
 
 // Admin dashboard (Fabkin analytics) + CRUD pages
@@ -84,10 +84,13 @@ Route::middleware(['auth','admin.only'])->group(function () {
             Route::put('/admin/events/{event}', [EventAdminController::class, 'update'])->name('dashboard.admin.events.update');
             Route::delete('/admin/events/{event}', [EventAdminController::class, 'destroy'])->name('dashboard.admin.events.destroy');
 
-            Route::get('/admin/donations', [DonationAdminController::class, 'index'])->name('dashboard.admin.donations');
-            Route::delete('/admin/donations/{donation}', [DonationAdminController::class, 'destroy'])->name('dashboard.admin.donations.destroy');
-
-            // Admin: Groups
+            Route::get('/admin/donation-causes/donation-causes', [DonationCauseAdminController::class, 'index'])->name('dashboard.admin.donation-causes.donation-causes');
+            Route::get('/admin/donation-causes/create', [DonationCauseAdminController::class, 'create'])->name('dashboard.admin.donation-causes.create');
+            Route::post('/admin/donation-causes/donation-causes', [DonationCauseAdminController::class, 'store'])->name('dashboard.admin.donation-causes.store');
+            Route::get('/admin/donation-causes/{donationCause}/edit', [DonationCauseAdminController::class, 'edit'])->name('dashboard.admin.donation-causes.edit');
+            Route::put('/admin/donation-causes/{donationCause}', [DonationCauseAdminController::class, 'update'])->name('dashboard.admin.donation-causes.update');
+            Route::delete('/admin/donation-causes/{donationCause}', [DonationCauseAdminController::class, 'destroy'])->name('dashboard.admin.donation-causes.destroy'); 
+           // Admin: Groups
             Route::get('/admin/groups', [GroupAdminController::class, 'index'])->name('dashboard.admin.groups');
             Route::put('/admin/groups/{group}', [GroupAdminController::class, 'update'])->name('dashboard.admin.groups.update');
             Route::delete('/admin/groups/{group}', [GroupAdminController::class, 'destroy'])->name('dashboard.admin.groups.destroy');

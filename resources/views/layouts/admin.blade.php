@@ -38,7 +38,7 @@
             <div class="px-3 text-uppercase small text-muted">Admin</div>
             <a href="{{ route('dashboard.admin.users') }}" class="{{ request()->routeIs('dashboard.admin.users*') ? 'active' : '' }}">Users</a>
             <a href="{{ route('dashboard.admin.events') }}" class="{{ request()->routeIs('dashboard.admin.events*') ? 'active' : '' }}">Events</a>
-            <a href="{{ route('dashboard.admin.donations') }}" class="{{ request()->routeIs('dashboard.admin.donations*') ? 'active' : '' }}">Donations</a>
+            <a href="{{ route('dashboard.admin.donation-causes.donation-causes') }}" class="{{ request()->routeIs('dashboard.admin.donation-causes.donation-causes*') ? 'active' : '' }}">Donation cause</a>
             <a href="{{ route('dashboard.admin.groups') }}" class="{{ request()->routeIs('dashboard.admin.groups*') ? 'active' : '' }}">Groups</a>
         </nav>
     </aside>
