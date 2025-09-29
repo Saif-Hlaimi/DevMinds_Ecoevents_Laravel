@@ -28,7 +28,7 @@ Laravel 12
 Installation
 
 Clone the repository:
-git clone https://github.com/your-username/ecoevents.git
+git clone https://github.com/Saif-Hlaimi/DevMinds_Ecoevents_Laravel.git
 cd ecoevents
 
 
@@ -95,17 +95,6 @@ Start the Vite development server:
 npm run dev
 
 Access the application at http://localhost:8000.
-
-Create a super admin (via tinker or seeder):
-php artisan tinker
-User::create(['name' => 'Admin', 'email' => 'admin@ecoevents.fr', 'password' => Hash::make('password')]);
-
-
-API Examples (if enabled):
-
-Create an event: POST /api/events with Bearer token.
-List products: GET /api/products?category=eco-friendly.
-
 
 
 The platform includes an admin dashboard for content management and a smooth frontend experience powered by Blade and Vite.
