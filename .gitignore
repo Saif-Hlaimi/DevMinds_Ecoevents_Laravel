@@ -70,3 +70,9 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Allow committing admin UI assets used by dashboard (Fabkin)
+!public/vendor/
+!public/vendor/fabkin/
+!public/vendor/fabkin/assets/
+!public/vendor/fabkin/assets/**
