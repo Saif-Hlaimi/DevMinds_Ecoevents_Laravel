@@ -183,6 +183,8 @@ Route::post('/groups/{slug}/posts', [GroupPostController::class, 'store'])->name
 Route::post('/posts/{postId}/react', [GroupPostController::class, 'react'])->name('groups.posts.react')->middleware('auth');
 Route::post('/posts/{postId}/comment', [GroupPostController::class, 'comment'])->name('groups.posts.comment')->middleware('auth');
 Route::delete('/posts/{postId}', [GroupPostController::class, 'destroy'])->name('groups.posts.destroy')->middleware('auth');
+// Post PDF
+Route::get('/posts/{postId}/pdf', [GroupPostController::class, 'pdf'])->name('groups.posts.pdf');
 
 // API tools for groups
 Route::middleware('auth')->group(function(){
@@ -190,6 +192,7 @@ Route::middleware('auth')->group(function(){
     Route::post('/api/groups/{slug}/inspire', [GroupToolsController::class, 'inspire'])->name('api.groups.inspire');
     Route::post('/api/moderate', [GroupToolsController::class, 'moderate'])->name('api.moderate');
     Route::post('/api/groups/{slug}/tts', [GroupToolsController::class, 'tts'])->name('api.groups.tts');
+    Route::post('/api/groups/{slug}/stt', [GroupToolsController::class, 'stt'])->name('api.groups.stt');
 });
 
 // Notifications

@@ -12,6 +12,8 @@ use App\Notifications\PostReacted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class GroupPostController extends Controller
 {
@@ -128,5 +130,39 @@ class GroupPostController extends Controller
             return response()->json(['ok'=>true]);
         }
         return back();
+    }
+
+    public function pdf(int $postId)
+    {
+        $post = GroupPost::with(['user','group'])->findOrFail($postId);
+
+        // Access control: if group is private, ensure user is an approved member
+        if (optional($post->group)->privacy === 'private') {
+            $isMember = GroupMember::where('group_id', $post->group_id)
+                ->where('user_id', Auth::id())
+                ->where('status', 'approved')
+                ->exists();
+            abort_unless($isMember, 403);
+        }
+
+        // Render Blade to HTML
+        $html = view('pdf.post', [
+            'post' => $post,
+        ])->render();
+
+        // Configure Dompdf
+        $options = new Options();
+        $options->set('isRemoteEnabled', true); // allow remote images
+        $options->set('isHtml5ParserEnabled', true);
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = 'post-'.$post->id.'-'.now()->format('Ymd_His').'.pdf';
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"'
+        ]);
     }
 }

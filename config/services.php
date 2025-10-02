@@ -40,6 +40,10 @@ return [
         'audio_format' => env('AZURE_SPEECH_AUDIO_FORMAT', 'audio-16khz-32kbitrate-mono-mp3'),
     ],
 
+    'assemblyai' => [
+        'api_key' => env('ASSEMBLYAI_API_KEY'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

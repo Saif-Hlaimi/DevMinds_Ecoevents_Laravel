@@ -33,6 +33,13 @@
                   </div>
                   <div class="d-flex align-items-center gap-2 mt-2">
                     <button type="button" class="btn btn-outline-primary btn-sm" data-inspire-post>✨ Inspire</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="stt-btn" title="Dictate your post">🎙️ Dictate</button>
+                    <select class="form-select form-select-sm" id="stt-lang" style="width:auto;">
+                      <option value="auto" selected>Auto</option>
+                      <option value="en">English</option>
+                      <option value="fr">Français</option>
+                      <option value="ar">العربية</option>
+                    </select>
                     <div class="small text-muted" data-inspire-topics-post>
                       <span class="badge bg-light text-dark me-1" data-topic>Waste Reduction</span>
                       <span class="badge bg-light text-dark me-1" data-topic>Local Cleanup</span>
@@ -40,6 +47,7 @@
                       <span class="badge bg-light text-dark me-1" data-topic>Plant a Tree</span>
                     </div>
                   </div>
+                  <div class="form-text" id="stt-status"></div>
                   <div class="input-group mt-2" data-inspire-ask-post>
                     <input type="text" class="form-control" placeholder="Ask the assistant: e.g., write a short post inviting people to Saturday cleanup">
                     <button class="btn btn-outline-secondary" type="button">Ask</button>
@@ -79,6 +87,7 @@
                 <button type="button" class="btn btn-link p-0" data-action="react" data-type="dislike" data-post-id="{{ $post->id }}" title="Dislike">👎 <span class="dislike-count">{{ $post->reactions->where('type','dislike')->count() }}</span></button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-action="tts" data-post-id="{{ $post->id }}">🔊 Read aloud</button>
               @endauth
+              <a class="btn btn-sm btn-outline-secondary" href="{{ route('groups.posts.pdf', $post->id) }}" target="_blank">🖨️ Print as PDF</a>
               @guest
                 <span class="text-muted">👍 {{ $post->reactions->where('type','like')->count() }} · 👎 {{ $post->reactions->where('type','dislike')->count() }}</span>
               @endguest
@@ -223,6 +232,125 @@
         if (res.ok) { location.reload(); }
       });
     }
+
+    // Speech-to-Text (dictation)
+    // Prefer Web Speech API for true real-time interim results; fallback to MediaRecorder + backend chunks
+    (function(){
+      const dictateBtn = document.getElementById('stt-btn');
+      if (!dictateBtn || !postForm) return;
+      const statusEl = document.getElementById('stt-status');
+      const contentEl = postForm.querySelector('textarea[name="content"]');
+      const langEl = document.getElementById('stt-lang');
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      let recognition = null;
+      let mediaStream = null;
+      let recorder = null;
+      let chunks = [];
+      let recording = false;
+      let intervalId = null;
+      let baseText = '';
+      const setStatus = (msg, bad=false) => { if (statusEl){ statusEl.textContent = msg||''; statusEl.style.color = bad? '#b91c1c':'#6b7280'; }};
+      const updateBtn = () => { dictateBtn.textContent = recording ? '⏹ Stop dictating' : '🎙️ Dictate'; };
+      const mapLang = (val) => {
+        if (val === 'en') return 'en-US';
+        if (val === 'fr') return 'fr-FR';
+        if (val === 'ar') return 'ar-SA';
+        return navigator.language || 'en-US';
+      };
+
+      dictateBtn.addEventListener('click', async () => {
+        try {
+          if (!recording) {
+            // start
+            baseText = (contentEl.value || '').trim();
+            if (SpeechRecognition) {
+              // True real-time via Web Speech API
+              recognition = new SpeechRecognition();
+              recognition.lang = mapLang(langEl?.value||'auto');
+              recognition.interimResults = true;
+              recognition.continuous = true;
+              let finalTranscript = '';
+              recognition.onresult = (event) => {
+                let interim = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                  const res = event.results[i];
+                  if (res.isFinal) finalTranscript += res[0].transcript + ' ';
+                  else interim += res[0].transcript;
+                }
+                contentEl.value = (baseText ? baseText + ' ' : '') + finalTranscript + interim;
+              };
+              recognition.onerror = (e) => setStatus('Speech recognition error: ' + e.error, true);
+              recognition.onend = () => { recording = false; updateBtn(); setStatus('Stopped.'); };
+              recognition.start();
+              recording = true; updateBtn(); setStatus('Listening… Speak now.');
+            } else {
+              // Fallback to MediaRecorder + backend (near real-time)
+              if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+                setStatus('Microphone not supported in this browser.', true); return;
+              }
+              mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+              chunks = [];
+              const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : 'audio/webm');
+              recorder = new MediaRecorder(mediaStream, { mimeType });
+              recorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+              recorder.onstop = async () => {
+                try {
+                  clearInterval(intervalId); intervalId = null;
+                  const blob = new Blob(chunks, { type: mimeType });
+                  const b64 = await new Promise(res=>{ const r = new FileReader(); r.onloadend = ()=>res(r.result); r.readAsDataURL(blob); });
+                  setStatus('Transcribing final…');
+                  const res = await fetch(`{{ route('api.groups.stt', $group->slug) }}`, { method:'POST', headers:{ 'Content-Type':'application/json','X-CSRF-TOKEN': token, 'Accept':'application/json' }, body: JSON.stringify({ audio: b64, mime: mimeType, language: langEl?.value||'auto' })});
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data.ok && data.text) {
+                      contentEl.value = (contentEl.value ? contentEl.value + ' ' : '') + data.text;
+                      setStatus('Transcription complete.');
+                    } else {
+                      setStatus('Transcription failed: ' + (data.error||'unknown'), true);
+                    }
+                  } else {
+                    setStatus('Transcription request failed.', true);
+                  }
+                } catch (err) { setStatus('Transcription error.', true); }
+                finally {
+                  if (mediaStream) mediaStream.getTracks().forEach(t=>t.stop());
+                  recording = false; updateBtn();
+                }
+              };
+              recorder.start();
+              // Send partial chunks every 3s
+              intervalId = setInterval(async () => {
+                try {
+                  if (!chunks.length) return;
+                  const part = chunks.splice(0, chunks.length);
+                  const blob = new Blob(part, { type: recorder.mimeType });
+                  const b64 = await new Promise(res=>{ const r = new FileReader(); r.onloadend = ()=>res(r.result); r.readAsDataURL(blob); });
+                  setStatus('Transcribing…');
+                  const res = await fetch(`{{ route('api.groups.stt', $group->slug) }}`, { method:'POST', headers:{ 'Content-Type':'application/json','X-CSRF-TOKEN': token, 'Accept':'application/json' }, body: JSON.stringify({ audio: b64, mime: recorder.mimeType, language: langEl?.value||'auto' })});
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data.ok && data.text) {
+                      contentEl.value = (contentEl.value ? contentEl.value + ' ' : '') + data.text;
+                    }
+                  }
+                } catch (_) {}
+              }, 3000);
+              recording = true; updateBtn(); setStatus('Recording… Speak now.');
+            }
+          } else {
+            // stop
+            if (SpeechRecognition && recognition && recording) {
+              recognition.stop();
+            }
+            if (recorder && recording) { recorder.stop(); }
+          }
+        } catch (e) {
+          setStatus('Mic permission denied or not available.', true);
+          if (mediaStream) mediaStream.getTracks().forEach(t=>t.stop());
+          recording = false; updateBtn();
+        }
+      });
+    })();
 
     // Ajax: react like/dislike
     document.querySelectorAll('[data-action="react"]').forEach(btn => {
