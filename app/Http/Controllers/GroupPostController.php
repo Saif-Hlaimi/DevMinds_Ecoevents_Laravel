@@ -35,6 +35,11 @@ class GroupPostController extends Controller
         ]);
         abort_if(empty($data['content']) && empty($data['image_url']) && !$request->hasFile('image_file'), 422, 'Content or image required');
 
+        // Bad-words moderation
+        if (!empty($data['content']) && app(\App\Services\ModerationService::class)->hasBadWords($data['content'])) {
+            return back()->withErrors(['content' => 'Inappropriate words detected in post content'])->withInput();
+        }
+
         $imagePath = null;
         if ($request->hasFile('image_file')) {
             $imagePath = $request->file('image_file')->store('group-posts','public');
@@ -86,6 +91,13 @@ class GroupPostController extends Controller
         $post = GroupPost::with('group')->findOrFail($postId);
         $this->ensureMember($post->group);
         $data = $request->validate(['content' => ['required','string','max:2000']]);
+        // Bad-words moderation on comments
+        if (app(\App\Services\ModerationService::class)->hasBadWords($data['content'] ?? '')) {
+            if ($request->expectsJson()) {
+                return response()->json(['ok'=>false,'error'=>'Inappropriate words detected'], 422);
+            }
+            return back()->withErrors(['content' => 'Inappropriate words detected'])->withInput();
+        }
         $comment = GroupPostComment::create([
             'post_id'=>$postId,
             'user_id'=>Auth::id(),

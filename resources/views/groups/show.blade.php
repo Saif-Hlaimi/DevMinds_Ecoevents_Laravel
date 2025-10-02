@@ -26,9 +26,23 @@
                     <button class="btn btn-success" type="submit" style="min-width:120px;">Publish</button>
                   </div>
                   <textarea name="content" rows="3" class="w-100 form-control @error('content') is-invalid @enderror" placeholder="What's on your mind?"></textarea>
+                  <div class="form-text" id="mod-status-post"></div>
                   <div class="row g-2 mt-2">
                     <div class="col-md-6"><input type="url" name="image_url" class="w-100 form-control @error('image_url') is-invalid @enderror" placeholder="Image URL (optional)"></div>
                     <div class="col-md-6"><input type="file" name="image_file" accept="image/*" class="w-100 form-control @error('image_file') is-invalid @enderror"></div>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 mt-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-inspire-post>✨ Inspire</button>
+                    <div class="small text-muted" data-inspire-topics-post>
+                      <span class="badge bg-light text-dark me-1" data-topic>Waste Reduction</span>
+                      <span class="badge bg-light text-dark me-1" data-topic>Local Cleanup</span>
+                      <span class="badge bg-light text-dark me-1" data-topic>Recycling Tips</span>
+                      <span class="badge bg-light text-dark me-1" data-topic>Plant a Tree</span>
+                    </div>
+                  </div>
+                  <div class="input-group mt-2" data-inspire-ask-post>
+                    <input type="text" class="form-control" placeholder="Ask the assistant: e.g., write a short post inviting people to Saturday cleanup">
+                    <button class="btn btn-outline-secondary" type="button">Ask</button>
                   </div>
               </form>
               </div>
@@ -63,6 +77,7 @@
               @auth
                 <button type="button" class="btn btn-link p-0" data-action="react" data-type="like" data-post-id="{{ $post->id }}" title="Like">👍 <span class="like-count">{{ $post->reactions->where('type','like')->count() }}</span></button>
                 <button type="button" class="btn btn-link p-0" data-action="react" data-type="dislike" data-post-id="{{ $post->id }}" title="Dislike">👎 <span class="dislike-count">{{ $post->reactions->where('type','dislike')->count() }}</span></button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-action="tts" data-post-id="{{ $post->id }}">🔊 Read aloud</button>
               @endauth
               @guest
                 <span class="text-muted">👍 {{ $post->reactions->where('type','like')->count() }} · 👎 {{ $post->reactions->where('type','dislike')->count() }}</span>
@@ -88,6 +103,7 @@
                     <div class="d-flex gap-2">
                         <input type="text" name="content" class="w-100 form-control" placeholder="Write a comment..." required>
                         <button type="submit" class="btn btn-success" style="min-width:56px;">➤</button>
+                        <button type="button" class="btn btn-outline-secondary" data-action="inspire" data-post-id="{{ $post->id }}">✨ Inspire</button>
                     </div>
                   </form>
                 @endif
@@ -185,6 +201,24 @@
       postForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(postForm);
+        const status = document.getElementById('mod-status-post');
+        const submitBtn = postForm.querySelector('button[type="submit"]');
+        const setStatus = (msg, bad=false, loading=false) => {
+          if (!status) return;
+          status.textContent = msg || '';
+          status.style.color = loading ? '#b91c1c' : (bad ? '#b91c1c' : '#6b7280');
+        };
+        // moderation pre-check
+        try {
+          const txt = (postForm.querySelector('textarea[name="content"]')?.value||'').trim();
+          if (txt){
+            setStatus('Checking for inappropriate language…', false, true);
+            submitBtn && (submitBtn.disabled = true);
+            const mod = await fetch(`{{ route('api.moderate') }}`, { method:'POST', headers:{ 'Content-Type':'application/json','X-CSRF-TOKEN': token, 'Accept':'application/json' }, body: JSON.stringify({ text: txt })});
+            if (mod.ok){ const m = await mod.json(); if (m.bad){ setStatus('Bad content detected. Please revise your post.', true); submitBtn && (submitBtn.disabled = false); return; } }
+            setStatus('No bad content detected. Posting…');
+          }
+        } catch(_){ submitBtn && (submitBtn.disabled = false); }
         const res = await fetch(postForm.action, { method:'POST', headers:{ 'X-CSRF-TOKEN': token, 'Accept':'application/json' }, body: formData });
         if (res.ok) { location.reload(); }
       });
@@ -212,6 +246,11 @@
         e.preventDefault();
         const postId = form.dataset.postId; const content = form.querySelector('input[name="content"]').value.trim();
         if (!content) return;
+        // Optional: client-side moderation check
+        try {
+          const mod = await fetch(`{{ url('/api/moderate') }}`, { method:'POST', headers:{ 'Content-Type':'application/json','X-CSRF-TOKEN': token, 'Accept':'application/json' }, body: JSON.stringify({ text: content })});
+          if (mod.ok) { const m = await mod.json(); if (m.bad) { alert('Please remove inappropriate words.'); return; } }
+        } catch(e) {}
         const res = await fetch(`{{ url('/posts') }}/${postId}/comment`, { method:'POST', headers:{ 'Content-Type':'application/json','X-CSRF-TOKEN': token, 'Accept':'application/json' }, body: JSON.stringify({ content })});
         if (res.ok) {
           const data = await res.json();
@@ -231,6 +270,94 @@
         }
       });
     });
+
+    // Inspire for post content
+    const inspirePostBtn = document.querySelector('[data-inspire-post]');
+    if (inspirePostBtn && postForm) {
+      const contentEl = postForm.querySelector('textarea[name="content"]');
+      const inspireUrl = '{{ route('api.inspire') }}';
+      const think = async (prompt) => {
+        inspirePostBtn.disabled = true; const old = inspirePostBtn.textContent; inspirePostBtn.textContent = '✨ Thinking...';
+        try {
+          const res = await fetch(inspireUrl, { method:'POST', headers:{ 'Content-Type':'application/json','X-CSRF-TOKEN': token, 'Accept':'application/json' }, body: JSON.stringify({ prompt })});
+          const data = await res.json(); if (data?.text && contentEl) contentEl.value = data.text.trim();
+        } finally { inspirePostBtn.disabled = false; inspirePostBtn.textContent = '✨ Inspire'; }
+      };
+      inspirePostBtn.addEventListener('click', ()=> think('Draft a short, positive group post about eco-friendly action.'));
+      document.querySelectorAll('[data-inspire-topics-post] [data-topic]').forEach(chip=>{
+        chip.addEventListener('click', ()=> think(`Write a short, friendly post about ${chip.textContent.trim()}.`));
+      });
+      const askWrap = document.querySelector('[data-inspire-ask-post]');
+      if (askWrap){
+        askWrap.querySelector('.btn').addEventListener('click', ()=>{
+          const q = askWrap.querySelector('input')?.value?.trim(); if (q) think(q);
+        });
+      }
+    }
+
+    // Ajax: inspire comment content using Gemini
+    document.querySelectorAll('[data-action="inspire"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const form = btn.closest('.comment-form');
+        if (!form) return;
+        const input = form.querySelector('input[name="content"]');
+        const prompt = 'Suggest a helpful, friendly, short comment for this group post.';
+        btn.disabled = true; btn.textContent = '✨ Thinking...';
+        try {
+          const res = await fetch(`{{ route('api.groups.inspire', $group->slug) }}`, { method:'POST', headers:{ 'Content-Type':'application/json','X-CSRF-TOKEN': token, 'Accept':'application/json' }, body: JSON.stringify({ prompt })});
+          const data = await res.json();
+          if (data?.text) input.value = data.text;
+        } finally { btn.disabled = false; btn.textContent = '✨ Inspire'; }
+      });
+    });
+
+    // Read aloud post content using Azure TTS with play/pause toggle and caching per post
+    (function(){
+      const audioCache = new Map(); // postId -> { audio: HTMLAudioElement, srcB64: string }
+      document.querySelectorAll('[data-action="tts"]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const card = btn.closest('[data-post-card]');
+          const postId = btn.getAttribute('data-post-id');
+          const textEl = card?.querySelector('p');
+          const text = (textEl?.textContent || '').trim();
+          if (!text) { alert('Nothing to read.'); return; }
+
+          // If cached, toggle play/pause
+          if (audioCache.has(postId)) {
+            const entry = audioCache.get(postId);
+            const a = entry.audio;
+            if (a.paused) { a.play(); btn.textContent = '⏸ Pause'; }
+            else { a.pause(); btn.textContent = '▶️ Play'; }
+            a.onended = () => { btn.textContent = '🔊 Read aloud'; };
+            return;
+          }
+
+          btn.disabled = true; const old = btn.textContent; btn.textContent = '🔊 Generating...';
+          try {
+            const res = await fetch(`{{ route('api.groups.tts', $group->slug) }}`, { method:'POST', headers:{ 'Content-Type':'application/json','X-CSRF-TOKEN': token, 'Accept':'application/json' }, body: JSON.stringify({ text })});
+            if (!res.ok) throw new Error('TTS failed');
+            const data = await res.json();
+            if (data?.debug) { console.debug('TTS debug:', data.debug); }
+            if (data?.audio) {
+              const src = 'data:audio/mpeg;base64,'+data.audio;
+              const audio = new Audio(src);
+              audioCache.set(postId, { audio, srcB64: data.audio });
+              audio.play();
+              btn.textContent = '⏸ Pause';
+              audio.onpause = () => { btn.textContent = '▶️ Play'; };
+              audio.onplay = () => { btn.textContent = '⏸ Pause'; };
+              audio.onended = () => { btn.textContent = '🔊 Read aloud'; };
+            } else {
+              alert('Could not generate audio. Check logs for details.');
+              btn.textContent = old;
+            }
+          } catch(e) {
+            alert('Text-to-Speech request failed.');
+            btn.textContent = old;
+          } finally { btn.disabled = false; }
+        });
+      });
+    })();
 
     // Ajax: delete post
     document.querySelectorAll('[data-action="delete-post"]').forEach(btn => {

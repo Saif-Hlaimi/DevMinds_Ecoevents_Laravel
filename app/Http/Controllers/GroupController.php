@@ -41,6 +41,11 @@ class GroupController extends Controller
         if ($request->hasFile('cover_image_file')) {
             $coverPath = $request->file('cover_image_file')->store('group-covers','public');
         }
+        // Bad-words moderation: block if name/description contain bad terms
+        if (app(\App\Services\ModerationService::class)->hasBadWords(($data['name'] ?? '').' '.($data['description'] ?? ''))) {
+            return back()->withErrors(['name' => 'Inappropriate words detected in group details'])->withInput();
+        }
+
         $group = Group::create([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,

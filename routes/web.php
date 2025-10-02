@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Admin\EventAdminController;
 use App\Http\Controllers\Admin\DonationCauseAdminController;
 use App\Http\Controllers\Admin\GroupAdminController;
+use App\Http\Controllers\Api\GroupToolsController;
 
 // Admin dashboard (Fabkin analytics) + CRUD pages
 Route::middleware(['auth','admin.only'])->group(function () {
@@ -182,6 +183,14 @@ Route::post('/groups/{slug}/posts', [GroupPostController::class, 'store'])->name
 Route::post('/posts/{postId}/react', [GroupPostController::class, 'react'])->name('groups.posts.react')->middleware('auth');
 Route::post('/posts/{postId}/comment', [GroupPostController::class, 'comment'])->name('groups.posts.comment')->middleware('auth');
 Route::delete('/posts/{postId}', [GroupPostController::class, 'destroy'])->name('groups.posts.destroy')->middleware('auth');
+
+// API tools for groups
+Route::middleware('auth')->group(function(){
+    Route::post('/api/inspire', [GroupToolsController::class, 'inspireGeneric'])->name('api.inspire');
+    Route::post('/api/groups/{slug}/inspire', [GroupToolsController::class, 'inspire'])->name('api.groups.inspire');
+    Route::post('/api/moderate', [GroupToolsController::class, 'moderate'])->name('api.moderate');
+    Route::post('/api/groups/{slug}/tts', [GroupToolsController::class, 'tts'])->name('api.groups.tts');
+});
 
 // Notifications
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index')->middleware('auth');

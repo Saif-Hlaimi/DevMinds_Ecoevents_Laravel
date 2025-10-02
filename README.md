@@ -99,6 +99,17 @@ Access the application at http://localhost:8000.
 
 
 The platform includes an admin dashboard for content management and a smooth frontend experience powered by Blade and Vite.
+
+AI features and moderation
+
+- Content inspiration (Gemini), text moderation (Azure Content Moderator), and text-to-speech (Azure Speech) are available in Groups. Configure these env vars in your .env (see .env.example):
+	- GEMINI_API_KEY, GEMINI_MODEL, GEMINI_ENDPOINT
+	- AZURE_CONTENT_MODERATOR_KEY, AZURE_CONTENT_MODERATOR_ENDPOINT, AZURE_CONTENT_MODERATOR_LANGUAGE
+	- AZURE_SPEECH_KEY, AZURE_SPEECH_REGION, AZURE_SPEECH_ENDPOINT, AZURE_SPEECH_VOICE, AZURE_SPEECH_AUDIO_FORMAT
+  
+After setting the keys, visit a group page to use:
+- “✨ Inspire” on comment form
+- “🔊 Read aloud” on post card
 Architecture
 
 Backend: Laravel 12.
