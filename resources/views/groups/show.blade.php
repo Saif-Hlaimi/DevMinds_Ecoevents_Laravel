@@ -16,6 +16,40 @@
   <div class="container">
     <div class="row g-4">
       <div class="col-md-8 col-lg-8 order-md-1 order-lg-1">
+        <!-- Top search for posts -->
+        <form method="GET" class="mb-3">
+          <div class="input-group input-group-lg">
+            <span class="input-group-text">🔎</span>
+            <input type="text" name="q" value="{{ $q ?? '' }}" class="form-control" placeholder="Search posts in {{ $group->name }}...">
+            <button class="btn btn-primary" type="submit">Search</button>
+          </div>
+          <div class="row g-2 mt-2">
+            <div class="col-6 col-md-4">
+              <select name="author" class="form-select" aria-label="Filter by author">
+                <option value="">All authors</option>
+                @foreach(($authors ?? []) as $a)
+                  <option value="{{ $a->id }}" @selected(($author ?? '')==$a->id)>{{ $a->name }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="col-6 col-md-3 d-flex align-items-center">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="has_image" value="1" id="has_image_top" @checked(($hasImage ?? false))>
+                <label class="form-check-label" for="has_image_top">With image only</label>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <select name="sort" class="form-select" aria-label="Sort posts">
+                <option value="new" @selected(($sort ?? '')==='new')>Newest</option>
+                <option value="old" @selected(($sort ?? '')==='old')>Oldest</option>
+                <option value="liked" @selected(($sort ?? '')==='liked')>Most liked</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2 d-grid">
+              <a class="btn btn-outline-secondary" href="{{ route('groups.show', $group->slug) }}">Reset</a>
+            </div>
+          </div>
+        </form>
         @auth
           @if ($isMember)
               <div class="p-4 mb-4" style="border:1px solid #e5e7eb;border-radius:12px;background:#ffffffcc;backdrop-filter:saturate(180%) blur(2px);">
@@ -56,8 +90,9 @@
               </div>
           @endif
         @endauth
+        
 
-        @forelse ($group->posts as $post)
+        @forelse (($posts ?? $group->posts) as $post)
             <div class="p-4 mb-4" data-post-card style="border:1px solid #e5e7eb;border-radius:12px;">
             <div class="d-flex align-items-center justify-content-between mb-2">
               <div>
@@ -122,6 +157,9 @@
         @empty
           <p>No posts yet.</p>
         @endforelse
+        @if(isset($posts))
+          <div class="mt-3">{{ $posts->appends(request()->query())->links() }}</div>
+        @endif
       </div>
   <div class="col-md-4 col-lg-4 order-md-2 order-lg-2">
         <div class="p-3" style="border:1px solid #e5e7eb;border-radius:12px;">

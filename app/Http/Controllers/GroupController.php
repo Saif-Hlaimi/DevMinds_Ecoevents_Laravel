@@ -10,10 +10,49 @@ use Illuminate\Support\Facades\Storage;
 
 class GroupController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $groups = Group::withCount('approvedMembers')->latest()->paginate(12);
-        return view('groups.index', compact('groups'));
+        $q = trim((string)$request->query('q', ''));
+        $privacy = $request->query('privacy'); // public|private|null
+        $sort = $request->query('sort', 'recent'); // recent|name|members_desc|members_asc|posts_desc
+
+        $query = Group::query()->withCount(['approvedMembers','posts']);
+        if ($q !== '') {
+            $query->where(function($x) use ($q){
+                $x->where('name','like','%'.$q.'%')
+                  ->orWhere('description','like','%'.$q.'%');
+            });
+        }
+        if (in_array($privacy, ['public','private'], true)) {
+            $query->where('privacy', $privacy);
+        }
+
+        switch ($sort) {
+            case 'name':
+                $query->orderBy('name');
+                break;
+            case 'members_desc':
+                $query->orderByDesc('approved_members_count');
+                break;
+            case 'members_asc':
+                $query->orderBy('approved_members_count');
+                break;
+            case 'posts_desc':
+                $query->orderByDesc('posts_count');
+                break;
+            case 'recent':
+            default:
+                $query->latest();
+                break;
+        }
+
+        $groups = $query->paginate(12)->withQueryString();
+        return view('groups.index', [
+            'groups' => $groups,
+            'q' => $q,
+            'privacy' => $privacy,
+            'sort' => $sort,
+        ]);
     }
 
     public function create()
@@ -66,10 +105,10 @@ class GroupController extends Controller
         return redirect()->route('groups.show', $group->slug)->with('success','Group created');
     }
 
-    public function show(string $slug)
+    public function show(Request $request, string $slug)
     {
         $group = Group::where('slug',$slug)
-            ->with(['posts.user','approvedMembers.user'])
+            ->with(['approvedMembers.user','creator'])
             ->firstOrFail();
 
         $isMember = false;
@@ -77,7 +116,49 @@ class GroupController extends Controller
             $isMember = $group->approvedMembers()->where('user_id', Auth::id())->exists();
         }
 
-        return view('groups.show', compact('group','isMember'));
+        // Post filters
+        $q = trim((string)$request->query('q',''));
+        $author = $request->query('author'); // user_id
+        $hasImage = $request->boolean('has_image');
+        $sort = $request->query('sort','new'); // new|old|liked
+
+        $postsQuery = \App\Models\GroupPost::query()
+            ->with(['user','reactions'])
+            ->withCount([
+                'reactions as likes_count' => function($q){ $q->where('type','like'); },
+                'reactions as dislikes_count' => function($q){ $q->where('type','dislike'); },
+            ])
+            ->where('group_id', $group->id);
+        if ($q !== '') {
+            $postsQuery->where('content','like','%'.$q.'%');
+        }
+        if ($author) {
+            $postsQuery->where('user_id', $author);
+        }
+        if ($hasImage) {
+            $postsQuery->where(function($x){
+                $x->whereNotNull('image_path')->orWhereNotNull('image_url');
+            });
+        }
+        switch ($sort) {
+            case 'old':
+                $postsQuery->orderBy('created_at','asc');
+                break;
+            case 'liked':
+                $postsQuery->orderByDesc('likes_count')->orderByDesc('created_at');
+                break;
+            case 'new':
+            default:
+                $postsQuery->orderBy('created_at','desc');
+        }
+
+        $posts = $postsQuery->paginate(10)->withQueryString();
+
+        // Build authors list for filter (users who posted in this group)
+        $authorIds = \App\Models\GroupPost::where('group_id',$group->id)->distinct()->pluck('user_id');
+        $authors = \App\Models\User::whereIn('id', $authorIds)->orderBy('name')->get(['id','name']);
+
+        return view('groups.show', compact('group','isMember','posts','q','author','hasImage','sort','authors'));
     }
 
     public function edit(string $slug)
