@@ -8,10 +8,21 @@ use Illuminate\Http\Request;
 
 class GroupAdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $groups = Group::withCount(['approvedMembers as members_count','posts'])->latest()->paginate(15);
-        return view('admin.groups', compact('groups'));
+        $search = trim((string)$request->query('q', ''));
+        $base = Group::query()
+            ->withCount(['approvedMembers as members_count','posts'])
+            ->with([
+                'creator',
+                'posts' => function($q){ $q->latest()->take(5); },
+                'posts.user',
+            ]);
+        if ($search !== '') {
+            $base->where('name', 'like', '%'.$search.'%');
+        }
+        $groups = $base->latest()->paginate(12)->withQueryString();
+        return view('admin.groups', [ 'groups' => $groups, 'q' => $search ]);
     }
 
     public function update(Request $request, Group $group)
