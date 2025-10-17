@@ -11,11 +11,12 @@
             </div>
         </div>
 
+        <!-- Deuxième ligne de statistiques -->
         <div class="row g-3">
             <div class="col-12 col-md-6 col-xl-3">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
-                        <div class="text-muted">Users</div>
+                        <div class="text-muted">Utilisateurs</div>
                         <div class="h3 mb-0">{{ $stats['users'] ?? '-' }}</div>
                         <small class="text-muted">Total</small>
                     </div>
@@ -24,32 +25,110 @@
             <div class="col-12 col-md-6 col-xl-3">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
-                        <div class="text-muted">Events</div>
+                        <div class="text-muted">Événements</div>
                         <div class="h3 mb-0">{{ $stats['events'] ?? '-' }}</div>
-                        <small class="text-muted">Upcoming/Total</small>
+                        <small class="text-muted">Total</small>
                     </div>
                 </div>
             </div>
             <div class="col-12 col-md-6 col-xl-3">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
-                        <div class="text-muted">Donations</div>
+                        <div class="text-muted">Dons</div>
                         <div class="h3 mb-0">${{ number_format($stats['donations_sum'] ?? 0, 2) }}</div>
-                        <small class="text-muted">Total amount</small>
+                        <small class="text-muted">Montant total</small>
                     </div>
                 </div>
             </div>
             <div class="col-12 col-md-6 col-xl-3">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
-                        <div class="text-muted">Orders</div>
-                        <div class="h3 mb-0">{{ $stats['orders'] ?? '-' }}</div>
-                        <small class="text-muted">Ecommerce</small>
+                        <div class="text-muted">Produits</div>
+                        <div class="h3 mb-0">{{ $stats['products'] ?? '-' }}</div>
+                        <small class="text-muted">Catalogue</small>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Commandes récentes -->
+        <div class="row g-3 mt-3">
+            <div class="col-12 col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold">Commandes Récentes</span>
+                            <a href="{{ route('dashboard.ecommerce.orders') }}" class="btn btn-sm btn-outline-primary">
+                                Voir toutes
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if($recentOrders->count() > 0)
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Client</th>
+                                            <th>Total</th>
+                                            <th>Statut</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($recentOrders as $order)
+                                            <tr>
+                                                <td><strong>#{{ $order->id }}</strong></td>
+                                                <td>
+                                                    <div>
+                                                        <div class="fw-semibold">{{ $order->customer_name }}</div>
+                                                        <small class="text-muted">{{ $order->customer_email }}</small>
+                                                    </div>
+                                                </td>
+                                                <td><strong>{{ $order->formatted_total }}</strong></td>
+                                                <td>
+                                                   
+                                                </td>
+                                                <td>
+                                                    <small>{{ $order->created_at->format('d/m/Y H:i') }}</small>
+                                                </td>
+                                                <td>
+                                                    <a href="{{ route('dashboard.ecommerce.orders.show', $order->id) }}" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        Voir
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <i class="fas fa-shopping-cart text-muted mb-3" style="font-size: 3rem;"></i>
+                                <p class="text-muted mb-0">Aucune commande récente</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Widget des notifications -->
+            <div class="col-12 col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <span class="fw-semibold">Notifications</span>
+                    </div>
+                    <div class="card-body">
+                        @include('admin.partials.notifications-widget')
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphique d'engagement (conservé pour la compatibilité) -->
         <div class="card mt-3 shadow-sm">
             <div class="card-header bg-white">
                 <div class="d-flex justify-content-between align-items-center">

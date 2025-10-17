@@ -3,152 +3,192 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\CommentProd;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Services\RecommendationService;
+use App\Models\ProductView;
 
 class ProductController extends Controller
 {
-    /**
-     * AFFICHER la liste des produits pour la boutique (shop page)
-     */
-    public function shop()
-    {
-        $products = Product::where('quantity', '>', 0) // Seulement les produits en stock
-                          ->latest()
-                          ->paginate(12);
+    protected $recommendationService;
 
-        return view('pages.shop', compact('products'));
+    /**
+     * Inject the RecommendationService dependency.
+     */
+    public function __construct(RecommendationService $recommendationService)
+    {
+        $this->recommendationService = $recommendationService;
     }
 
     /**
-     * AFFICHER la liste des produits (pour l'administration).
+     * Display the shop page with a list of available products.
+     * Filters by stock and allows search and sorting.
      */
-    public function index()
+    public function shop(Request $request)
     {
-        // Remplacer get() par paginate() pour avoir la pagination
-        $products = Product::latest()->paginate(12); // 12 produits par page
+        $query = Product::where('quantity', '>', 0); // Only show products in stock
+
+        // Filter products by search term if provided
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Sort products based on the selected option
+        $sort = $request->get('sort', 'newest'); // Default to 'newest' if no sort provided
+        switch ($sort) {
+            case 'price_asc':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'quantity_asc':
+                $query->orderBy('quantity', 'asc');
+                break;
+            case 'quantity_desc':
+                $query->orderBy('quantity', 'desc');
+                break;
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $products = $query->paginate(12)->withQueryString();
+
+        // Get recommendations for authenticated users
+        $recommendations = collect();
+        if (Auth::check()) {
+            $recommendations = $this->recommendationService->getRecommendations(Auth::id());
+        }
+
+        return view('pages.shop', compact('products', 'recommendations'));
+    }
+
+    /**
+     * Display the product list for administration.
+     * Allows search and sorting for admin users.
+     */
+    public function index(Request $request)
+    {
+        $query = Product::query();
+
+        // Filter products by search term if provided
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where('name', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Sort products based on the selected option
+        $sort = $request->get('sort', 'newest');
+        switch ($sort) {
+            case 'price_asc':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'quantity_asc':
+                $query->orderBy('quantity', 'asc');
+                break;
+            case 'quantity_desc':
+                $query->orderBy('quantity', 'desc');
+                break;
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $products = $query->paginate(12)->withQueryString();
         return view('products.index', compact('products'));
     }
 
     /**
-     * AFFICHER le formulaire de création de produit.
-     */
-    public function create()
-    {
-        return view('products.create');
-    }
-
-    /**
-     * AJOUTER un nouveau produit (avec gestion de l'image).
-     */
-    public function store(Request $request)
-    {
-        // 1. Validation des données
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|max:255',
-            'description' => 'nullable|string',
-            'caracteristiques' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'quantity' => 'required|integer|min:0',
-            'price' => 'required|numeric|min:0',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                            ->withErrors($validator)
-                            ->withInput();
-        }
-
-        $data = $validator->validated();
-
-        // 2. Traitement de l'upload de l'image
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('products', 'public');
-            $data['image_path'] = $path;
-        }
-
-        // 3. Création du produit
-        Product::create($data);
-
-        // 4. Redirection
-        return redirect()->route('products.index')
-                         ->with('success', 'Produit créé avec succès.');
-    }
-
-    /**
-     * AFFICHER un produit spécifique.
+     * Display a specific product with its details and comments.
      */
     public function show(Product $product)
     {
-        return view('products.show', compact('product'));
+        // Load comments with their associated users
+        $product->load(['commentProds.user']);
+
+        // Track product view if user is authenticated
+        if (Auth::check()) {
+            ProductView::create([
+                'user_id' => Auth::id(),
+                'product_id' => $product->id,
+            ]);
+        }
+
+        // Get recommendations based on the product and user history
+        $userId = Auth::check() ? Auth::id() : null;
+        $recommendations = $this->recommendationService->getRecommendations($userId, $product->id);
+
+        return view('products.show', compact('product', 'recommendations'));
     }
 
     /**
-     * AFFICHER le formulaire de modification.
+     * Store a new comment for a specific product.
      */
-    public function edit(Product $product)
+    public function storeComment(Request $request, Product $product)
     {
-        return view('products.edit', compact('product'));
-    }
-
-    /**
-     * MODIFIER le produit (avec gestion de l'image).
-     */
-    public function update(Request $request, Product $product)
-    {
-        // 1. Validation des données
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|max:255',
-            'description' => 'nullable|string',
-            'caracteristiques' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'quantity' => 'required|integer|min:0',
-            'price' => 'required|numeric|min:0',
+        // Validate the comment content
+        $validated = $request->validate([
+            'content' => 'required|string|max:1000|min:3',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                            ->withErrors($validator)
-                            ->withInput();
+        // Create the comment
+        $comment = CommentProd::create([
+            'content' => $validated['content'],
+            'user_id' => Auth::id(),
+            'product_id' => $product->id,
+        ]);
+
+        // Load the user relationship for the response
+        $comment->load('user');
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'comment' => [
+                    'id' => $comment->id,
+                    'content' => $comment->content,
+                    'user_name' => $comment->user->name,
+                    'formatted_date' => $comment->formatted_date,
+                ],
+                'message' => 'Commentaire ajouté avec succès.',
+            ]);
         }
 
-        $data = $validator->validated();
-
-        // 2. Traitement de l'upload de la nouvelle image
-        if ($request->hasFile('image')) {
-            // Supprimer l'ancienne image si elle existe
-            if ($product->image_path && Storage::disk('public')->exists($product->image_path)) {
-                Storage::disk('public')->delete($product->image_path);
-            }
-            // Stocker la nouvelle image
-            $path = $request->file('image')->store('products', 'public');
-            $data['image_path'] = $path;
-        }
-
-        // 3. Mise à jour du produit
-        $product->update($data);
-
-        // 4. Redirection
-        return redirect()->route('products.index')
-                         ->with('success', 'Produit mis à jour avec succès.');
+        return back()->with('success', 'Commentaire ajouté avec succès.');
     }
 
     /**
-     * SUPPRIMER un produit (avec suppression de l'image associée).
+     * Retrieve AI-based recommendations for the authenticated user.
      */
-    public function destroy(Product $product)
+    public function getRecommendations()
     {
-        // 1. Supprimer l'image associée du stockage
-        if ($product->image_path && Storage::disk('public')->exists($product->image_path)) {
-            Storage::disk('public')->delete($product->image_path);
+        try {
+            $recommendations = $this->recommendationService->getRecommendations(Auth::id());
+            return response()->json([
+                'success' => true,
+                'recommendations' => $recommendations,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des recommandations: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Impossible de charger les recommandations',
+            ], 500);
         }
-        
-        // 2. Suppression du produit
-        $product->delete();
-
-        // 3. Redirection
-        return redirect()->route('products.index')
-                         ->with('success', 'Produit supprimé avec succès.');
     }
 }

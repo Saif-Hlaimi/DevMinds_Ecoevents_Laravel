@@ -66,5 +66,7 @@
 <script src="/vendor/fabkin/assets/libs/echarts/echarts.common.js"></script>
 <script src="/vendor/fabkin/assets/js/app.js"></script>
 @stack('scripts')
+<!-- Ajout Bootstrap JS CDN pour corriger l'erreur -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

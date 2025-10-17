@@ -7,10 +7,8 @@ return [
     | Third Party Services
     |--------------------------------------------------------------------------
     |
-    | This file is for storing the credentials for third party services such
-    | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
+    | Ce fichier stocke les identifiants pour les services tiers comme Mailgun,
+    | Postmark, AWS, etc. Il sert de point central pour ces informations.
     |
     */
 
@@ -18,24 +16,21 @@ return [
         'token' => env('POSTMARK_TOKEN'),
     ],
 
-    // --- Custom external services ---
+    // --- Services externes personnalisés ---
     'gemini' => [
-        // Google Generative Language API (Gemini)
         'api_key' => env('GEMINI_API_KEY'),
         'model' => env('GEMINI_MODEL', 'gemini-1.5-flash'),
         'endpoint' => env('GEMINI_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/models'),
     ],
     'azure_moderator' => [
-        // Azure Content Moderator or text screening compatible endpoint
         'key' => env('AZURE_CONTENT_MODERATOR_KEY'),
-        'endpoint' => env('AZURE_CONTENT_MODERATOR_ENDPOINT'), // e.g., https://<resource>.cognitiveservices.azure.com
+        'endpoint' => env('AZURE_CONTENT_MODERATOR_ENDPOINT'),
         'language' => env('AZURE_CONTENT_MODERATOR_LANGUAGE', 'eng'),
     ],
     'azure_speech' => [
-        // Azure Speech (Text-to-Speech)
         'key' => env('AZURE_SPEECH_KEY'),
-        'region' => env('AZURE_SPEECH_REGION'), // e.g., francecentral
-        'endpoint' => env('AZURE_SPEECH_ENDPOINT'), // e.g., https://francecentral.api.cognitive.microsoft.com/
+        'region' => env('AZURE_SPEECH_REGION'),
+        'endpoint' => env('AZURE_SPEECH_ENDPOINT'),
         'voice' => env('AZURE_SPEECH_VOICE', 'en-US-JennyNeural'),
         'audio_format' => env('AZURE_SPEECH_AUDIO_FORMAT', 'audio-16khz-32kbitrate-mono-mp3'),
     ],
@@ -72,4 +67,13 @@ return [
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
         'redirect' => env('FACEBOOK_REDIRECT_URI'),
     ],
+
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+    ],
+
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+    ]
 ];

@@ -34,7 +34,7 @@
                                 <li><a href="{{ route('events.index') }}">Events</a></li>
                                 <li><a href="{{ route('team') }}">Team</a></li>
                                 <li><a href="{{ route('shop') }}">Shop</a></li>
-                                <li><a href="{{ route('cart') }}">Cart</a></li>
+                                <li><a href="{{ route('cart.index') }}">Cart</a></li>
                                 <li><a href="{{ route('checkout') }}">Checkout</a></li>
                                 <li><a href="{{ route('faq') }}">FAQ</a></li>
                                 <li><a href="{{ route('error.page') }}">404 Error</a></li>
@@ -44,6 +44,12 @@
                         <li><a href="{{ route('events.index') }}">Events</a></li>
                         <li><a href="{{ route('donations') }}">Donations</a></li>
                         <li><a href="{{ route('contact') }}">Contact Us</a></li>
+                        <li>
+                            <a href="{{ route('cart.index') }}" class="position-relative">
+                                <i class="fa-solid fa-shopping-cart"></i>
+                                <span class="cart-count-badge badge bg-primary" style="display: none;">0</span>
+                            </a>
+                        </li>
                         @auth
                             <li>
                                 <a href="{{ route('notifications.index') }}" class="position-relative">
@@ -61,6 +67,7 @@
                                 </a>
                                 <ul class="sub-menu">
                                     <li><a href="{{ route('profile') }}">View profile</a></li>
+                                    <li><a href="{{ route('orders.index') }}">Mes commandes</a></li>
                                    <li>
     <form action="{{ route('logout') }}" method="POST">
         @csrf
@@ -100,3 +107,41 @@
     </div>
     <button id="closeButton" class="text-white"><i class="fa-solid fa-xmark"></i></button>
 </div>
+
+<script>
+// Script global pour la gestion du panier
+document.addEventListener('DOMContentLoaded', function() {
+    // Charger le contenu du panier au chargement de la page
+    loadCartContent();
+    
+    function loadCartContent() {
+        fetch('{{ route("cart.content") }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateCartCount(data.totalItems);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement du panier:', error);
+        });
+    }
+    
+    function updateCartCount(count) {
+        const cartCounts = document.querySelectorAll('.cart-count-badge');
+        cartCounts.forEach(counter => {
+            if (count > 0) {
+                counter.textContent = count;
+                counter.style.display = 'inline-block';
+            } else {
+                counter.style.display = 'none';
+            }
+        });
+    }
+    
+    // Écouter les événements de mise à jour du panier
+    document.addEventListener('cartUpdated', function(event) {
+        updateCartCount(event.detail.totalItems);
+    });
+});
+</script>

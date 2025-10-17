@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GroupController;
@@ -11,13 +10,14 @@ use App\Http\Controllers\DonationCauseController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\EventController;
-use App\Http\Controllers\ProductController; // Ajout important
-
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 use Laravel\Socialite\Facades\Socialite;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CRMContactController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
-use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\EmailController;
 use App\Http\Controllers\Admin\ChatController;
 use App\Http\Controllers\Admin\CalendarController;
@@ -28,7 +28,7 @@ use App\Http\Controllers\Admin\GroupAdminController;
 use App\Http\Controllers\Api\GroupToolsController;
 
 // Admin dashboard (Fabkin analytics) + CRUD pages
-Route::middleware(['auth','admin.only'])->group(function () {
+Route::middleware(['auth', 'admin.only'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::prefix('dashboard')->group(function () {
         // Email
@@ -52,13 +52,21 @@ Route::middleware(['auth','admin.only'])->group(function () {
         Route::post('/ecommerce/products', [AdminProductController::class, 'store'])->name('dashboard.ecommerce.products.store');
         Route::put('/ecommerce/products/{product}', [AdminProductController::class, 'update'])->name('dashboard.ecommerce.products.update');
         Route::delete('/ecommerce/products/{product}', [AdminProductController::class, 'destroy'])->name('dashboard.ecommerce.products.destroy');
+        Route::get('/ecommerce/products/export-pdf', [AdminProductController::class, 'exportPdf'])->name('dashboard.ecommerce.products.export-pdf');
 
-        Route::get('/ecommerce/orders', [OrderController::class, 'index'])->name('dashboard.ecommerce.orders');
-        Route::post('/ecommerce/orders', [OrderController::class, 'store'])->name('dashboard.ecommerce.orders.store');
-        Route::put('/ecommerce/orders/{order}', [OrderController::class, 'update'])->name('dashboard.ecommerce.orders.update');
-        Route::delete('/ecommerce/orders/{order}', [OrderController::class, 'destroy'])->name('dashboard.ecommerce.orders.destroy');
-        Route::post('/ecommerce/orders/{order}/items', [OrderController::class, 'addItem'])->name('dashboard.ecommerce.orders.items.add');
-        Route::delete('/ecommerce/orders/{order}/items/{item}', [OrderController::class, 'removeItem'])->name('dashboard.ecommerce.orders.items.remove');
+        Route::get('/ecommerce/orders', [AdminOrderController::class, 'index'])->name('dashboard.ecommerce.orders');
+        Route::get('/ecommerce/orders/{order}', [AdminOrderController::class, 'show'])->name('dashboard.ecommerce.orders.show');
+        Route::post('/ecommerce/orders', [AdminOrderController::class, 'store'])->name('dashboard.ecommerce.orders.store');
+        Route::put('/ecommerce/orders/{order}', [AdminOrderController::class, 'update'])->name('dashboard.ecommerce.orders.update');
+        Route::delete('/ecommerce/orders/{order}', [AdminOrderController::class, 'destroy'])->name('dashboard.ecommerce.orders.destroy');
+        Route::post('/ecommerce/orders/{order}/items', [AdminOrderController::class, 'addItem'])->name('dashboard.ecommerce.orders.items.add');
+        Route::delete('/ecommerce/orders/{order}/items/{item}', [AdminOrderController::class, 'removeItem'])->name('dashboard.ecommerce.orders.items.remove');
+        
+        // Additional order management routes
+        Route::post('/ecommerce/orders/{order}/approve', [AdminOrderController::class, 'approve'])->name('dashboard.ecommerce.orders.approve');
+        Route::post('/ecommerce/orders/{order}/reject', [AdminOrderController::class, 'reject'])->name('dashboard.ecommerce.orders.reject');
+        Route::post('/ecommerce/orders/{order}/ship', [AdminOrderController::class, 'ship'])->name('dashboard.ecommerce.orders.ship');
+        Route::post('/ecommerce/orders/{order}/deliver', [AdminOrderController::class, 'deliver'])->name('dashboard.ecommerce.orders.deliver');
 
         // Invoice (static page for now)
         Route::view('/invoice', 'admin.invoice-detail')->name('dashboard.invoice.detail');
@@ -75,31 +83,29 @@ Route::middleware(['auth','admin.only'])->group(function () {
         // CMS
         Route::view('/cms/blog', 'admin.cms-blog')->name('dashboard.cms.blog');
 
-    // Admin: Users, Events, Donations (admin-only)
-    Route::middleware('admin.only')->group(function () {
-            Route::get('/admin/users', [UserAdminController::class, 'index'])->name('dashboard.admin.users');
-            Route::put('/admin/users/{user}', [UserAdminController::class, 'update'])->name('dashboard.admin.users.update');
-            Route::delete('/admin/users/{user}', [UserAdminController::class, 'destroy'])->name('dashboard.admin.users.destroy');
+        // Admin: Users, Events, Donations, Groups
+        Route::get('/admin/users', [UserAdminController::class, 'index'])->name('dashboard.admin.users');
+        Route::put('/admin/users/{user}', [UserAdminController::class, 'update'])->name('dashboard.admin.users.update');
+        Route::delete('/admin/users/{user}', [UserAdminController::class, 'destroy'])->name('dashboard.admin.users.destroy');
 
-            Route::get('/admin/events', [EventAdminController::class, 'index'])->name('dashboard.admin.events');
-            Route::put('/admin/events/{event}', [EventAdminController::class, 'update'])->name('dashboard.admin.events.update');
-            Route::delete('/admin/events/{event}', [EventAdminController::class, 'destroy'])->name('dashboard.admin.events.destroy');
+        Route::get('/admin/events', [EventAdminController::class, 'index'])->name('dashboard.admin.events');
+        Route::put('/admin/events/{event}', [EventAdminController::class, 'update'])->name('dashboard.admin.events.update');
+        Route::delete('/admin/events/{event}', [EventAdminController::class, 'destroy'])->name('dashboard.admin.events.destroy');
 
-            Route::get('/admin/donation-causes/donation-causes', [DonationCauseAdminController::class, 'index'])->name('dashboard.admin.donation-causes.donation-causes');
-            Route::get('/admin/donation-causes/create', [DonationCauseAdminController::class, 'create'])->name('dashboard.admin.donation-causes.create');
-            Route::post('/admin/donation-causes/donation-causes', [DonationCauseAdminController::class, 'store'])->name('dashboard.admin.donation-causes.store');
-            Route::get('/admin/donation-causes/{donationCause}/edit', [DonationCauseAdminController::class, 'edit'])->name('dashboard.admin.donation-causes.edit');
-            Route::put('/admin/donation-causes/{donationCause}', [DonationCauseAdminController::class, 'update'])->name('dashboard.admin.donation-causes.update');
-            Route::delete('/admin/donation-causes/{donationCause}', [DonationCauseAdminController::class, 'destroy'])->name('dashboard.admin.donation-causes.destroy'); 
-           // Admin: Groups
-            Route::get('/admin/groups', [GroupAdminController::class, 'index'])->name('dashboard.admin.groups');
-            Route::put('/admin/groups/{group}', [GroupAdminController::class, 'update'])->name('dashboard.admin.groups.update');
-            Route::delete('/admin/groups/{group}', [GroupAdminController::class, 'destroy'])->name('dashboard.admin.groups.destroy');
-        });
+        Route::get('/admin/donation-causes/donation-causes', [DonationCauseAdminController::class, 'index'])->name('dashboard.admin.donation-causes.donation-causes');
+        Route::get('/admin/donation-causes/create', [DonationCauseAdminController::class, 'create'])->name('dashboard.admin.donation-causes.create');
+        Route::post('/admin/donation-causes/donation-causes', [DonationCauseAdminController::class, 'store'])->name('dashboard.admin.donation-causes.store');
+        Route::get('/admin/donation-causes/{donationCause}/edit', [DonationCauseAdminController::class, 'edit'])->name('dashboard.admin.donation-causes.edit');
+        Route::put('/admin/donation-causes/{donationCause}', [DonationCauseAdminController::class, 'update'])->name('dashboard.admin.donation-causes.update');
+        Route::delete('/admin/donation-causes/{donationCause}', [DonationCauseAdminController::class, 'destroy'])->name('dashboard.admin.donation-causes.destroy');
+
+        Route::get('/admin/groups', [GroupAdminController::class, 'index'])->name('dashboard.admin.groups');
+        Route::put('/admin/groups/{group}', [GroupAdminController::class, 'update'])->name('dashboard.admin.groups.update');
+        Route::delete('/admin/groups/{group}', [GroupAdminController::class, 'destroy'])->name('dashboard.admin.groups.destroy');
     });
 });
 
-// Render Blade homepage (Vite + Blade)
+// Render Blade homepage
 Route::get('/', function () {
     return view('pages.home');
 })->name('home');
@@ -109,7 +115,7 @@ Route::view('/about', 'pages.about')->name('about');
 Route::view('/services', 'pages.services')->name('services');
 Route::view('/contact', 'pages.contact')->name('contact');
 
-// Selected pages from template (one variant per section)
+// Selected pages from template
 Route::view('/projects', 'pages.projects')->name('projects');
 Route::view('/project', 'pages.project-single')->name('project.single');
 
@@ -125,34 +131,27 @@ Route::view('/event', 'pages.event-single')->name('event.single');
 Route::view('/team', 'pages.team')->name('team');
 Route::view('/team-member', 'pages.team-single')->name('team.single');
 
-// Routes pour les produits (AJOUT CRITIQUE)
-Route::get('/shop', [ProductController::class, 'shop'])->name('shop');
-Route::resource('products', ProductController::class);
-
-Route::view('/product', 'pages.product')->name('product');
-Route::view('/cart', 'pages.cart')->name('cart');
-Route::view('/checkout', 'pages.checkout')->name('checkout');
-
 Route::view('/faq', 'pages.faq')->name('faq');
 Route::view('/error', 'pages.error-page')->name('error.page');
 
+// Authentication routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
 
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.store');
-       
+
     Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
     Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
     Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 
-    // --- Google OAuth routes ---
+    // Google OAuth routes
     Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
     Route::get('/auth/google-callback', [AuthController::class, 'handleGoogleCallback']);
 
-    // --- Facebook OAuth routes ---
+    // Facebook OAuth routes
     Route::get('/auth/facebook', [AuthController::class, 'redirectToFacebook'])->name('facebook.login');
     Route::get('/auth/facebook-callback', [AuthController::class, 'handleFacebookCallback']);
 });
@@ -160,34 +159,42 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Profile
-Route::get('/profile', [ProfileController::class, 'show'])->name('profile')->middleware('auth');
-Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update')->middleware('auth');
-Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('auth');
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
 // Groups
 Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
-Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create')->middleware('auth');
-Route::post('/groups', [GroupController::class, 'store'])->name('groups.store')->middleware('auth');
+Route::middleware('auth')->group(function () {
+    Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
+    Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
+    Route::get('/groups/{slug}/edit', [GroupController::class, 'edit'])->name('groups.edit');
+    Route::put('/groups/{slug}', [GroupController::class, 'update'])->name('groups.update');
+    Route::delete('/groups/{slug}', [GroupController::class, 'destroy'])->name('groups.destroy');
+});
 Route::get('/groups/{slug}', [GroupController::class, 'show'])->name('groups.show');
-// Donations
-Route::resource('donation-causes', DonationCauseController::class);
-Route::post('donations', [DonationController::class, 'store'])->name('donations.store')->middleware('auth');
+
 // Membership
-Route::post('/groups/{slug}/join', [MembershipController::class, 'join'])->name('groups.join')->middleware('auth');
-Route::post('/groups/{slug}/leave', [MembershipController::class, 'leave'])->name('groups.leave')->middleware('auth');
-Route::post('/groups/{slug}/requests/{requestId}/approve', [MembershipController::class, 'approve'])->name('groups.requests.approve')->middleware('auth');
-Route::post('/groups/{slug}/requests/{requestId}/reject', [MembershipController::class, 'reject'])->name('groups.requests.reject')->middleware('auth');
+Route::middleware('auth')->group(function () {
+    Route::post('/groups/{slug}/join', [MembershipController::class, 'join'])->name('groups.join');
+    Route::post('/groups/{slug}/leave', [MembershipController::class, 'leave'])->name('groups.leave');
+    Route::post('/groups/{slug}/requests/{requestId}/approve', [MembershipController::class, 'approve'])->name('groups.requests.approve');
+    Route::post('/groups/{slug}/requests/{requestId}/reject', [MembershipController::class, 'reject'])->name('groups.requests.reject');
+});
 
 // Posts
-Route::post('/groups/{slug}/posts', [GroupPostController::class, 'store'])->name('groups.posts.store')->middleware('auth');
-Route::post('/posts/{postId}/react', [GroupPostController::class, 'react'])->name('groups.posts.react')->middleware('auth');
-Route::post('/posts/{postId}/comment', [GroupPostController::class, 'comment'])->name('groups.posts.comment')->middleware('auth');
-Route::delete('/posts/{postId}', [GroupPostController::class, 'destroy'])->name('groups.posts.destroy')->middleware('auth');
-// Post PDF
+Route::middleware('auth')->group(function () {
+    Route::post('/groups/{slug}/posts', [GroupPostController::class, 'store'])->name('groups.posts.store');
+    Route::post('/posts/{postId}/react', [GroupPostController::class, 'react'])->name('groups.posts.react');
+    Route::post('/posts/{postId}/comment', [GroupPostController::class, 'comment'])->name('groups.posts.comment');
+    Route::delete('/posts/{postId}', [GroupPostController::class, 'destroy'])->name('groups.posts.destroy');
+});
 Route::get('/posts/{postId}/pdf', [GroupPostController::class, 'pdf'])->name('groups.posts.pdf');
 
 // API tools for groups
-Route::middleware('auth')->group(function(){
+Route::middleware('auth')->group(function () {
     Route::post('/api/inspire', [GroupToolsController::class, 'inspireGeneric'])->name('api.inspire');
     Route::post('/api/groups/{slug}/inspire', [GroupToolsController::class, 'inspire'])->name('api.groups.inspire');
     Route::post('/api/moderate', [GroupToolsController::class, 'moderate'])->name('api.moderate');
@@ -196,26 +203,68 @@ Route::middleware('auth')->group(function(){
 });
 
 // Notifications
-Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index')->middleware('auth');
-Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read')->middleware('auth');
-Route::post('/notifications/read-all', [NotificationController::class, 'markAll'])->name('notifications.readAll')->middleware('auth');
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAll'])->name('notifications.readAll');
+});
 
-// Group manage (owner)
-Route::get('/groups/{slug}/edit', [GroupController::class, 'edit'])->name('groups.edit')->middleware('auth');
-Route::put('/groups/{slug}', [GroupController::class, 'update'])->name('groups.update')->middleware('auth');
-Route::delete('/groups/{slug}', [GroupController::class, 'destroy'])->name('groups.destroy')->middleware('auth');
+// Donations
+Route::resource('donation-causes', DonationCauseController::class);
+Route::post('donations', [DonationController::class, 'store'])->name('donations.store')->middleware('auth');
 
 // Events
-Route::get('/events/create', [EventController::class, 'create'])->name('events.create')->middleware('auth');
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
-Route::get('/events/create', [EventController::class, 'create'])->name('events.create')->middleware('auth');
-Route::post('/events', [EventController::class, 'store'])->name('events.store');
-Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
-Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
-Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
-Route::post('/events/{event}/comment', [EventController::class, 'storeComment'])
-    ->name('comments.store')->middleware('auth');
+Route::middleware('auth')->group(function () {
+    Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+    Route::post('/events', [EventController::class, 'store'])->name('events.store');
+    Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
+    Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
+    Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+    Route::post('/events/{event}/comment', [EventController::class, 'storeComment'])->name('comments.store');
+    Route::delete('/comments/{comment}', [EventController::class, 'destroyComment'])->name('comments.destroy');
+});
 
-Route::delete('/comments/{comment}', [EventController::class, 'destroyComment'])
-    ->name('comments.destroy')->middleware('auth');
+// Products
+Route::get('/shop', [ProductController::class, 'shop'])->name('shop');
+Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
+Route::middleware('auth')->group(function () {
+    Route::resource('products', ProductController::class)->except(['show']);
+    Route::post('products/{product}/comment', [ProductController::class, 'storeComment'])->name('products.comment');
+});
+Route::view('/product', 'pages.product')->name('product');
+
+// Cart
+Route::middleware('auth')->group(function () {
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::put('/cart/update/{item}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/remove/{item}', [CartController::class, 'remove'])->name('cart.remove');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+    Route::get('/cart/content', [CartController::class, 'getCartContent'])->name('cart.content');
+});
+
+// Orders
+Route::middleware('auth')->group(function () {
+    // Page de paiement (GET)
+    Route::get('/checkout', [OrderController::class, 'checkout'])->name('checkout');
+    
+    // Création de la commande (POST)
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    
+    // Historique des commandes de l'utilisateur
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    
+    // Affichage d'une commande spécifique
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    
+    // Affichage du reçu de commande
+    Route::get('/orders/{order}/receipt', [OrderController::class, 'receipt'])->name('orders.receipt');
+    
+    // Téléchargement du reçu en PDF
+    Route::get('/orders/{order}/download-receipt', [OrderController::class, 'downloadReceipt'])->name('orders.download-receipt');
+    
+    // Route d'annulation
+    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+});

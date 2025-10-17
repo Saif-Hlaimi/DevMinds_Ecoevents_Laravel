@@ -21,9 +21,49 @@
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3>Liste des produits</h3>
-                    <a href="{{ route('products.create') }}" class="btn btn-primary">
-                        <i class="fa-solid fa-plus me-2"></i>Ajouter un produit
-                    </a>
+                 
+                </div>
+            </div>
+        </div>
+
+        <!-- Barre de recherche + tri -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="GET" action="{{ route('products.index') }}">
+                            <div class="row align-items-end">
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <input type="text"
+                                               name="search"
+                                               class="form-control"
+                                               placeholder="Rechercher un produit par nom..."
+                                               value="{{ request('search') }}">
+                                        @if(request('search'))
+                                            <a href="{{ route('products.index') }}" class="btn btn-outline-secondary" type="button">
+                                                <i class="fa-solid fa-times"></i>
+                                            </a>
+                                        @endif
+                                        <button class="btn btn-primary" type="submit">
+                                            <i class="fa-solid fa-search me-2"></i>Rechercher
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mt-3 mt-md-0">
+                                    <label for="admin-sort" class="form-label">Trier</label>
+                                    <select id="admin-sort" name="sort" class="form-select" onchange="this.form.submit()">
+                                        <option value="newest" {{ request('sort','newest')==='newest' ? 'selected' : '' }}>Plus récent</option>
+                                        <option value="oldest" {{ request('sort')==='oldest' ? 'selected' : '' }}>Plus ancien</option>
+                                        <option value="price_asc" {{ request('sort')==='price_asc' ? 'selected' : '' }}>Prix : bas → élevé</option>
+                                        <option value="price_desc" {{ request('sort')==='price_desc' ? 'selected' : '' }}>Prix : élevé → bas</option>
+                                        <option value="quantity_asc" {{ request('sort')==='quantity_asc' ? 'selected' : '' }}>Quantité : faible → élevée</option>
+                                        <option value="quantity_desc" {{ request('sort')==='quantity_desc' ? 'selected' : '' }}>Quantité : élevée → faible</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -35,19 +75,28 @@
             </div>
         @endif
 
+        @if(request('search'))
+            <div class="alert alert-info mb-4">
+                Résultats de recherche pour : "<strong>{{ request('search') }}</strong>"
+                <a href="{{ route('products.index') }}" class="float-end btn btn-sm btn-outline-primary">
+                    Afficher tous les produits
+                </a>
+            </div>
+        @endif
+
         <div class="row">
             @forelse ($products as $product)
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="card product-card h-100">
                         <div class="card-image position-relative">
                             @if($product->image_path)
-                                <img src="{{ asset('storage/' . $product->image_path) }}" 
-                                     class="card-img-top" 
+                                <img src="{{ asset('storage/' . $product->image_path) }}"
+                                     class="card-img-top"
                                      alt="{{ $product->name }}"
                                      style="height: 250px; object-fit: cover;">
                             @else
-                                <img src="{{ asset('assets/images/product/product1.png') }}" 
-                                     class="card-img-top" 
+                                <img src="{{ asset('assets/images/product/product1.png') }}"
+                                     class="card-img-top"
                                      alt="Image par défaut"
                                      style="height: 250px; object-fit: cover;">
                             @endif
@@ -59,43 +108,27 @@
                                 @endif
                             </div>
                         </div>
-                        
                         <div class="card-body">
                             <h5 class="card-title">{{ $product->name }}</h5>
-                            <p class="card-text text-primary fw-bold fs-4">${{ number_format($product->price, 2) }}</p>
+                            <p class="card-text text-primary fw-bold fs-4">{{ $product->formatted_price }}</p>
                             <p class="card-text text-muted">
-                                <small>Quantité: {{ $product->quantity }}</small>
+                                <small>Quantité : {{ $product->quantity }}</small>
                             </p>
-                            
                             @if($product->description)
                                 <p class="card-text text-muted small">
                                     {{ Str::limit($product->description, 80) }}
                                 </p>
                             @endif
                         </div>
-                        
                         <div class="card-footer bg-transparent">
                             <div class="btn-group w-100" role="group">
-                                <a href="{{ route('products.show', $product) }}" 
-                                   class="btn btn-outline-info btn-sm" 
-                                   title="Voir">
-                                    <i class="fa-solid fa-eye"></i>
+                                <a href="{{ route('products.show', $product) }}"
+                                   class="btn btn-info btn-sm"
+                                   title="Voir le produit">
+                                    <i class="fa-solid fa-eye"></i> Voir
                                 </a>
-                                <a href="{{ route('products.edit', $product) }}" 
-                                   class="btn btn-outline-warning btn-sm" 
-                                   title="Modifier">
-                                    <i class="fa-solid fa-edit"></i>
-                                </a>
-                                <form action="{{ route('products.destroy', $product) }}" 
-                                      method="POST" 
-                                      class="d-inline"
-                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Supprimer">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </form>
+                              
+                              
                             </div>
                         </div>
                     </div>
@@ -104,52 +137,60 @@
                 <div class="col-12 text-center py-5">
                     <div class="card">
                         <div class="card-body py-5">
-                            <h5 class="text-muted">Aucun produit trouvé</h5>
-                            <p class="text-muted">Commencez par ajouter votre premier produit.</p>
-                            <a href="{{ route('products.create') }}" class="btn btn-primary mt-3">
-                                <i class="fa-solid fa-plus me-2"></i>Ajouter un produit
-                            </a>
+                            @if(request('search'))
+                                <h5 class="text-muted">Aucun produit trouvé pour "{{ request('search') }}"</h5>
+                                <p class="text-muted">Essayez avec d'autres termes de recherche.</p>
+                                <a href="{{ route('products.index') }}" class="btn btn-primary mt-3">
+                                    Afficher tous les produits
+                                </a>
+                            @else
+                                <h5 class="text-muted">Aucun produit trouvé</h5>
+                                <p class="text-muted">Commencez par ajouter votre premier produit.</p>
+                                <a href="{{ route('products.create') }}" class="btn btn-primary mt-3">
+                                    <i class="fa-solid fa-plus me-2"></i>Ajouter un produit
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>
             @endforelse
         </div>
 
-        <!-- Pagination pour l'administration si nécessaire -->
+        <!-- Pagination -->
         @if($products->hasPages())
-        <div class="row mt-5">
-            <div class="col-12">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center">
-                        @if($products->onFirstPage())
-                            <li class="page-item disabled">
-                                <span class="page-link">Précédent</span>
-                            </li>
-                        @else
-                            <li class="page-item">
-                                <a class="page-link" href="{{ $products->previousPageUrl() }}">Précédent</a>
-                            </li>
-                        @endif
+            <div class="row mt-5">
+                <div class="col-12">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            @if($products->onFirstPage())
+                                <li class="page-item disabled">
+                                    <span class="page-link">Précédent</span>
+                                </li>
+                            @else
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $products->previousPageUrl() }}{{ request('search') ? '&search=' . request('search') : '' }}{{ request('sort') ? '&sort=' . request('sort') : '' }}">Précédent</a>
+                                </li>
+                            @endif
 
-                        @foreach(range(1, $products->lastPage()) as $page)
-                            <li class="page-item {{ $page == $products->currentPage() ? 'active' : '' }}">
-                                <a class="page-link" href="{{ $products->url($page) }}">{{ $page }}</a>
-                            </li>
-                        @endforeach
+                            @foreach(range(1, $products->lastPage()) as $page)
+                                <li class="page-item {{ $page == $products->currentPage() ? 'active' : '' }}">
+                                    <a class="page-link" href="{{ $products->url($page) }}{{ request('search') ? '&search=' . request('search') : '' }}{{ request('sort') ? '&sort=' . request('sort') : '' }}">{{ $page }}</a>
+                                </li>
+                            @endforeach
 
-                        @if($products->hasMorePages())
-                            <li class="page-item">
-                                <a class="page-link" href="{{ $products->nextPageUrl() }}">Suivant</a>
-                            </li>
-                        @else
-                            <li class="page-item disabled">
-                                <span class="page-link">Suivant</span>
-                            </li>
-                        @endif
-                    </ul>
-                </nav>
+                            @if($products->hasMorePages())
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $products->nextPageUrl() }}{{ request('search') ? '&search=' . request('search') : '' }}{{ request('sort') ? '&sort=' . request('sort') : '' }}">Suivant</a>
+                                </li>
+                            @else
+                                <li class="page-item disabled">
+                                    <span class="page-link">Suivant</span>
+                                </li>
+                            @endif
+                        </ul>
+                    </nav>
+                </div>
             </div>
-        </div>
         @endif
     </div>
 </div>
@@ -190,6 +231,10 @@
 .btn-group .btn:last-child {
     border-top-right-radius: 0.375rem;
     border-bottom-right-radius: 0.375rem;
+}
+
+.input-group .btn-outline-secondary {
+    border-color: #6c757d;
 }
 </style>
 @endsection

@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/nice-select.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/custom.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/cart-styles.css') }}">
     @stack('styles')
     <!-- Use Vite for app JS only (omit Tailwind CSS to avoid resetting template styles) -->
     @vite(['resources/js/app.js'])
