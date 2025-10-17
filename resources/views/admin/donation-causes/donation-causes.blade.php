@@ -9,6 +9,9 @@
   @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
   @endif
+  @if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+  @endif
   <div class="card">
     <div class="table-responsive">
       <table class="table align-middle mb-0">
@@ -41,6 +44,7 @@
             <td>{{ $cause->sdg }}</td>
             <td>{{ $cause->created_at->format('Y-m-d H:i') }}</td>
             <td class="text-end">
+              <a href="{{ route('dashboard.admin.donation-causes.donations', $cause) }}" class="btn btn-info btn-sm me-2">View Donations</a>
               <a href="{{ route('dashboard.admin.donation-causes.edit', $cause) }}" class="btn btn-primary btn-sm me-2">Edit</a>
               <form method="POST" action="{{ route('dashboard.admin.donation-causes.destroy', $cause) }}" onsubmit="return confirm('Delete this donation cause?')" class="d-inline">
                 @csrf

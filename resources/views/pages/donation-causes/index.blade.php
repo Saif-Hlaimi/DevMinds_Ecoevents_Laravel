@@ -22,17 +22,21 @@
             @endauth
             <div class="row g-4">
                 @forelse ($donationCauses as $cause)
+                    @php
+                        $percentage = min(($cause->raised_amount / $cause->goal_amount) * 100, 100);
+                        $fullRadius = ($percentage >= 100) ? 'border-top-right-radius: 10px; border-bottom-right-radius: 10px;' : '';
+                    @endphp
                     <div class="col-lg-4 wow fadeInUp" data-wow-duration="{{ 1.2 + $loop->index*0.2 }}s" data-wow-delay=".2s">
                         <div class="donation__item bor">
                             <div class="image mb-30">
                                 <img src="{{ $cause->image ? asset('storage/' . $cause->image) : asset('assets/images/donation/0' . ($loop->index % 3 + 1) . '.jpg') }}" alt="{{ $cause->title }}" >
                             </div>
-                            <div class="donation__item-progress-wrp">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <h6>Goal ${{ number_format($cause->goal_amount, 2) }}</h6>
-                                    <h6>Raised ${{ number_format($cause->raised_amount, 2) }}</h6>
-                                </div>
-                                <div class="donation__item-progress-bar" style="width: {{ min(($cause->raised_amount / $cause->goal_amount) * 100, 100) }}%"></div>
+                           <div class="donation__item-progress-wrp mb-10" style="background-color: #e0e0e0; border-radius: 10px; height: 9px; overflow: hidden; display: flex; align-items: center;">
+                                <div class="donation__item-progress-bar" style="width: {{ $percentage }}%; background-color: #4CAF50; height: 20px; border-top-left-radius: 10px; border-bottom-left-radius: 10px; {{ $fullRadius }} transition: width 0.3s ease;"></div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h6>Raised ${{ number_format($cause->raised_amount, 2) }}</h6>
+                                <h6>Goal ${{ number_format($cause->goal_amount, 2) }}</h6>
                             </div>
                             <h3><a href="{{ route('donation-causes.show', $cause->id) }}">{{ $cause->title }}</a></h3>
                             <p class="text-muted">{{ $cause->sdg }}</p>
