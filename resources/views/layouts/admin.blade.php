@@ -40,6 +40,9 @@
             <a href="{{ route('dashboard.admin.events') }}" class="{{ request()->routeIs('dashboard.admin.events*') ? 'active' : '' }}">Events</a>
             <a href="{{ route('dashboard.admin.donation-causes.donation-causes') }}" class="{{ request()->routeIs('dashboard.admin.donation-causes.donation-causes*') ? 'active' : '' }}">Donation cause</a>
             <a href="{{ route('dashboard.admin.groups') }}" class="{{ request()->routeIs('dashboard.admin.groups*') ? 'active' : '' }}">Groups</a>
+<a href="{{ route('admin.complaints.index') }}" class="{{ request()->routeIs('admin.complaints.*') ? 'active' : '' }}">
+    Complaints
+</a>
         </nav>
     </aside>
     <section class="admin-content d-flex flex-column">

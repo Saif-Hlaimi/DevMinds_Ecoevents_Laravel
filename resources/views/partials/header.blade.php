@@ -43,7 +43,8 @@
                         <li><a href="{{ route('groups.index') }}">Groups</a></li>
                         <li><a href="{{ route('events.index') }}">Events</a></li>
                         <li><a href="{{ route('donations') }}">Donations</a></li>
-                        <li><a href="{{ route('contact') }}">Contact Us</a></li>
+                        <li><a href="{{ route('complaint-types.index') }}">Complaints</a></li>
+
                         @auth
                             <li>
                                 <a href="{{ route('notifications.index') }}" class="position-relative">
