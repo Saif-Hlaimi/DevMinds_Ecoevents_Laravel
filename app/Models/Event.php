@@ -19,6 +19,8 @@ class Event extends Model
         'type',          // online / onsite
         'max_participants',
         'meet_link',
+        'is_paid',      // ✅ Nouveau
+        'price',       
     ];
 
     protected $casts = [

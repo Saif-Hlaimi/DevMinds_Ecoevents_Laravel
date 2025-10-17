@@ -19,4 +19,21 @@ class Comment extends Model
     {
         return $this->belongsTo(Event::class);
     }
+
+    // ➕ Ajout relation réactions
+    public function reactions()
+    {
+        return $this->hasMany(CommentReaction::class);
+    }
+
+    // ➕ Raccourcis pour compter
+    public function likes()
+    {
+        return $this->reactions()->where('type', 'like');
+    }
+
+    public function dislikes()
+    {
+        return $this->reactions()->where('type', 'dislike');
+    }
 }

@@ -74,4 +74,14 @@ return [
     ],
 
     // moved above; avoid duplicate key
+    'stripe' => [
+    'key' => env('STRIPE_KEY'),
+    'secret' => env('STRIPE_SECRET'),
+    'currency' => env('STRIPE_CURRENCY', 'usd'),
+],
+    'openai' => [
+    'api_key' => env('OPENAI_API_KEY'),
+    ],
+
+
 ];

@@ -1,3 +1,5 @@
+@include('pages.chatbot')
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

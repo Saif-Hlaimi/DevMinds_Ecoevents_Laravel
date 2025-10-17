@@ -67,7 +67,6 @@ class AuthController extends Controller
             'phone'    => ['nullable', 'string', 'max:20'],
             'country'  => ['nullable', 'string', 'max:100'],
             'profile_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'terms'    => ['required', 'accepted'],
         ]);
 
         // Gestion image de profil

@@ -10,12 +10,14 @@ use App\Models\User;
 use App\Models\Event;
 use App\Models\Donation;
 use Illuminate\Support\Facades\Schema;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $hasPS = Schema::hasColumn('orders','payment_status');
+        $now = Carbon::now();
+
         $stats = [
             'products' => Product::count(),
             'orders' => Order::count(),
@@ -25,6 +27,11 @@ class DashboardController extends Controller
             'contacts' => Contact::count(),
             'users' => User::count(),
             'events' => Event::count(),
+            'events_upcoming' => Event::where('date', '>', $now)->count(),
+            'events_past' => Event::where('date', '<', $now)->count(),
+            'events_free' => Event::where('is_paid', false)->count(),
+            'events_paid' => Event::where('is_paid', true)->count(),
+            'events_revenue' => Event::where('is_paid', true)->sum('price'),
             'donations_sum' => Donation::sum('amount'),
         ];
 
@@ -40,5 +47,6 @@ class DashboardController extends Controller
             : collect();
 
         return view('dashboard', compact('stats', 'recentOrders', 'recentNotifications'));
+        return view('dashboard', compact('stats'));
     }
 }

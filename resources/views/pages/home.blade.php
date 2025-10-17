@@ -68,6 +68,7 @@
             
         </div>
         <div id="scrollDown" class="banner__scroll-text"><span>SCROLL NOW</span> <span class="banner__scroll-text-line"></span>
+        
 </div>
         <div class="banner__leaf wow slideInLeft d-none d-md-block" data-wow-duration="1s" data-wow-delay="1s">
             <img src="{{ asset('assets/images/shape/leaf.png') }}" alt="shape">
@@ -89,6 +90,10 @@
                             <div class="col-md-4"> <br>
                                 <a href="{{ route('about') }}" class="btn-one wow fadeInUp" data-wow-duration="1.5s" data-wow-delay=".5s"><span>Discover with us</span> <i class="fa-solid fa-angles-right"></i></a>
                             </div>
+                   
+
+
+
                             <div class="col-md-8">
                                 <div class="banner__content-con wow fadeInUp" data-wow-duration="1.6s" data-wow-delay=".6s">
                                     <img src="{{ asset('assets/images/icon/arrow-long.png') }}" alt="arrow">
@@ -591,6 +596,9 @@
             </div>
         </div>
     </div>
+  <!-- Script -->
+
+
     <!-- Our info area end here -->
 @endsection
 

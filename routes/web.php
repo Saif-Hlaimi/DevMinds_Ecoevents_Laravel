@@ -36,6 +36,7 @@ use App\Http\Controllers\Admin\ComplaintAdminController;
 
 
 
+use App\Http\Controllers\ChatbotController; // Ajout du contrôleur Chatbot
 
 // Admin dashboard (Fabkin analytics) + CRUD pages
 Route::middleware(['auth', 'admin.only'])->group(function () {
@@ -296,3 +297,53 @@ Route::middleware('auth')->group(function () {
     Route::get('complaint-types', [ComplaintTypeController::class, 'index'])->name('complaint-types.index');
 Route::get('complaint-types/{complaintType}', [ComplaintTypeController::class, 'show'])->name('complaint-types.show');
 Route::resource('complaints', ComplaintController::class);
+Route::get('/events/create', [EventController::class, 'create'])->name('events.create')->middleware('auth');
+Route::post('/events', [EventController::class, 'store'])->name('events.store');
+Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
+Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
+Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+Route::post('/events/{event}/comment', [EventController::class, 'storeComment'])
+    ->name('comments.store')->middleware('auth');
+// Réactions Like / Dislike
+Route::post('/comments/{comment}/react/{type}', [EventController::class, 'reactComment'])
+    ->name('comments.react')
+    ->middleware('auth');
+Route::delete('/comments/{comment}', [EventController::class, 'destroyComment'])
+    ->name('comments.destroy')->middleware('auth');
+Route::post('/events/{event}/request', [EventController::class, 'requestParticipation'])
+    ->name('events.requestParticipation');
+
+Route::post('/events/{event}/approve/{user}', [EventController::class, 'approve'])->name('events.approve');
+Route::post('/events/{event}/reject/{user}', [EventController::class, 'reject'])->name('events.reject');
+Route::delete('/events/{event}/unregister', [EventController::class, 'unregister'])
+    ->name('events.unregister');
+    // Paiement
+/// Paiement (payant)
+// Affiche la page de paiement
+// Afficher le formulaire de paiement
+// Afficher le formulaire de paiement
+Route::get('/events/{event}/payment', [EventController::class, 'showPaymentForm'])
+    ->name('events.payment')
+    ->middleware('auth');
+
+// Créer la Stripe Checkout Session
+Route::post('/events/{event}/payment', [EventController::class, 'processPayment'])
+    ->name('events.processPayment')
+    ->middleware('auth');
+
+// Redirection après succès
+Route::get('/events/{event}/payment-success', [EventController::class, 'paymentSuccess'])
+    ->name('events.payment.success')
+    ->middleware('auth');
+
+
+Route::get('/chatbot', [ChatbotController::class, 'index'])->name('chatbot.index');
+Route::post('/chatbot', [ChatbotController::class, 'ask'])->name('chatbot.ask');
+
+Route::get('events/{event}/certificate/{participant}', [EventController::class, 'certificate'])
+    ->name('events.certificate')
+    ->middleware('auth');
+
+
+// Participation gratuite / demande
+
