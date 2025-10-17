@@ -42,24 +42,7 @@ use App\Http\Controllers\ChatbotController; // Ajout du contrôleur Chatbot
 Route::middleware(['auth', 'admin.only'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::prefix('dashboard')->group(function () {
-        // Events
-        Route::get('/events', [EventController::class, 'index'])->name('events.index');
-        // Define create BEFORE wildcard and attach auth explicitly
-        Route::get('/events/create', [EventController::class, 'create'])->middleware('auth')->name('events.create');
-        // Store (auth)
-        Route::post('/events', [EventController::class, 'store'])->middleware('auth')->name('events.store');
-        // Edit/Update/Delete (auth + numeric id)
-        Route::get('/events/{event}/edit', [EventController::class, 'edit'])->middleware('auth')->whereNumber('event')->name('events.edit');
-        Route::put('/events/{event}', [EventController::class, 'update'])->middleware('auth')->whereNumber('event')->name('events.update');
-        Route::delete('/events/{event}', [EventController::class, 'destroy'])->middleware('auth')->whereNumber('event')->name('events.destroy');
-        // Event participation (auth + numeric id)
-        Route::post('/events/{event}/register', [EventController::class, 'register'])->middleware('auth')->whereNumber('event')->name('events.register');
-        Route::delete('/events/{event}/register', [EventController::class, 'unregister'])->middleware('auth')->whereNumber('event')->name('events.unregister');
-        // Comments (auth + numeric event id for store; comment id for delete)
-        Route::post('/events/{event}/comment', [EventController::class, 'storeComment'])->middleware('auth')->whereNumber('event')->name('comments.store');
-        Route::delete('/comments/{comment}', [EventController::class, 'destroyComment'])->middleware('auth')->name('comments.destroy');
-        // Show must be after /events/create to avoid catching it, and enforce numeric IDs
-        Route::get('/events/{event}', [EventController::class, 'show'])->whereNumber('event')->name('events.show');
+    // (Removed misplaced public Events routes from admin dashboard scope)
         Route::get('/calendar', [CalendarController::class, 'index'])->name('dashboard.calendar');
         Route::post('/calendar', [CalendarController::class, 'store'])->name('dashboard.calendar.store');
         Route::delete('/calendar/{event}', [CalendarController::class, 'destroy'])->name('dashboard.calendar.destroy');
@@ -150,21 +133,21 @@ Route::view('/team-member', 'pages.team-single')->name('team.single');
 Route::view('/faq', 'pages.faq')->name('faq');
 Route::view('/error', 'pages.error-page')->name('error.page');
 
-// Authentication routes
-Route::middleware('auth')->group(function () {
+// Authentication routes (guest only)
+Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
-    Route::get('/events/{event}/edit', [EventController::class, 'edit'])->whereNumber('event')->name('events.edit');
-    Route::put('/events/{event}', [EventController::class, 'update'])->whereNumber('event')->name('events.update');
-    Route::delete('/events/{event}', [EventController::class, 'destroy'])->whereNumber('event')->name('events.destroy');
 
-    Route::post('/events/{event}/register', [EventController::class, 'register'])->whereNumber('event')->name('events.register');
-    Route::delete('/events/{event}/register', [EventController::class, 'unregister'])->whereNumber('event')->name('events.unregister');
-    Route::post('/events/{event}/comment', [EventController::class, 'storeComment'])->whereNumber('event')->name('comments.store');
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.store');
+
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 
-// Show must be after /events/create to avoid catching it, and enforce numeric IDs
-Route::get('/events/{event}', [EventController::class, 'show'])->whereNumber('event')->name('events.show');
+    // Google OAuth routes
+    Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
     Route::get('/auth/google-callback', [AuthController::class, 'handleGoogleCallback']);
 
     // Facebook OAuth routes
@@ -202,20 +185,16 @@ Route::middleware('auth')->group(function () {
 
 // Events
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
+// Group posts routes (left intact but separated from Events)
 Route::middleware('auth')->group(function () {
     Route::post('/posts/{postId}/comment', [GroupPostController::class, 'comment'])->name('groups.posts.comment');
     Route::delete('/posts/{postId}', [GroupPostController::class, 'destroy'])->name('groups.posts.destroy');
 });
 Route::get('/posts/{postId}/pdf', [GroupPostController::class, 'pdf'])->name('groups.posts.pdf');
 Route::get('/posts/{postId}/print', [GroupPostController::class, 'print'])->name('groups.posts.print');
-    // Event participation
-    Route::post('/events/{event}/register', [EventController::class, 'register'])->name('events.register');
-    Route::delete('/events/{event}/register', [EventController::class, 'unregister'])->name('events.unregister');
 
 // API tools for groups
 Route::middleware('auth')->group(function () {
-// Show must be after /events/create to avoid catching it
-Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
     Route::post('/api/inspire', [GroupToolsController::class, 'inspireGeneric'])->name('api.inspire');
     Route::post('/api/groups/{slug}/inspire', [GroupToolsController::class, 'inspire'])->name('api.groups.inspire');
     Route::post('/api/moderate', [GroupToolsController::class, 'moderate'])->name('api.moderate');
@@ -234,19 +213,18 @@ Route::middleware('auth')->group(function () {
 Route::resource('donation-causes', DonationCauseController::class);
 Route::post('donations', [DonationController::class, 'store'])->name('donations.store')->middleware('auth');
 
-// Events
-Route::get('/events', [EventController::class, 'index'])->name('events.index');
-Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+// Events (canonical set)
+Route::get('/events/{event}', [EventController::class, 'show'])->whereNumber('event')->name('events.show');
 Route::middleware('auth')->group(function () {
     Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
-    Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
-    Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
-    Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+    Route::get('/events/{event}/edit', [EventController::class, 'edit'])->whereNumber('event')->name('events.edit');
+    Route::put('/events/{event}', [EventController::class, 'update'])->whereNumber('event')->name('events.update');
+    Route::delete('/events/{event}', [EventController::class, 'destroy'])->whereNumber('event')->name('events.destroy');
     // Event participation
-    Route::post('/events/{event}/register', [EventController::class, 'register'])->name('events.register');
-    Route::delete('/events/{event}/register', [EventController::class, 'unregister'])->name('events.unregister');
-    Route::post('/events/{event}/comment', [EventController::class, 'storeComment'])->name('comments.store');
+    Route::post('/events/{event}/register', [EventController::class, 'register'])->whereNumber('event')->name('events.register');
+    Route::delete('/events/{event}/register', [EventController::class, 'unregister'])->whereNumber('event')->name('events.unregister');
+    Route::post('/events/{event}/comment', [EventController::class, 'storeComment'])->whereNumber('event')->name('comments.store');
     Route::delete('/comments/{comment}', [EventController::class, 'destroyComment'])->name('comments.destroy');
 });
 
