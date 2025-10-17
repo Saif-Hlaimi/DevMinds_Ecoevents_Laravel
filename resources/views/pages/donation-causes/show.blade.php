@@ -53,6 +53,7 @@
                     @csrf
                     <input type="hidden" name="donation_cause_id" value="{{ $donationCause->id }}">
                     <input type="hidden" name="payment_method" id="payment_method" value="test">
+                    <input type="hidden" name="payment_source_id" id="payment_source_id">
                     <h3 class="mb-30">Select payment Amount</h3>
                     <div class="amount-group mb-70">
                         @php
@@ -62,6 +63,10 @@
                             <span>$</span>
                             <input class="addAmount-value" type="number" name="amount" id="amount" step="0.01" min="0.01" required value="250">
                         </div>
+                        <button type="button" class="amount-btn" data-value="50">$50</button>
+                        <button type="button" class="amount-btn" data-value="125">$125</button>
+                        <button type="button" class="active amount-btn" data-value="250">$250</button>
+                        <button type="button" class="amount-btn" data-value="350">$350</button>
                     </div>
                     @error('amount')
                         <div class="alert alert-danger mt-2">{{ $message }}</div>
@@ -70,89 +75,239 @@
                     <div class="payment-btns mb-65">
                         <button type="button" class="payment-btn active" onclick="setPaymentMethod('test')">Test Donation</button>
                         <button type="button" class="payment-btn" onclick="setPaymentMethod('stripe')">Stripe - Credit Card</button>
+                        <button type="button" class="payment-btn" onclick="setPaymentMethod('square')">Square - Credit Card</button>
                     </div>
 
                     <!-- Stripe Elements for Credit Card -->
                     <div id="stripe-card-element" style="display: none; margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></div>
                     <div id="card-errors" role="alert" style="color: red; margin-bottom: 10px;"></div>
 
+                  <!-- Square Card Form -->
+                    <div id="square-form" style="display: none; margin-bottom: 20px;">
+                        <div id="card-container" style="min-height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <div style="text-align: center; padding: 20px; color: #666;">
+                                Initializing payment form...
+                            </div>
+                        </div>
+                        <div id="square-errors" style="color: red; margin-top: 10px; min-height: 20px;"></div>
+                    </div>
+
                     <button type="submit" id="submit-btn" class="btn-one mt-50"><span>Donate Now</span> <i class="fa-solid fa-angles-right"></i></button>
                 </form>
                 @endif
 
-                <script src="https://js.stripe.com/v3/"></script>
-                <script>
-                    const stripe = Stripe('{{ env("STRIPE_KEY") }}');
-                    const elements = stripe.elements();
-                    let cardElement;
+              <script src="https://js.stripe.com/v3/"></script>
+<script src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+<script>
+    const stripe = Stripe('{{ env("STRIPE_KEY") }}');
+    const elements = stripe.elements();
+    let cardElement;
+    const remaining = {{ $remaining }};
+    
+    // Square variables
+    let squarePayments = null;
+    let squareCard = null;
+    let isSquareCardReady = false;
 
-                    function setAmount(button, value, remaining) {
-                        const adjustedValue = Math.min(value, remaining);
-                        document.getElementById('amount').value = adjustedValue;
-                        document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
-                        button.classList.add('active');
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.amount-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const value = parseFloat(this.dataset.value);
+                const adjustedValue = Math.min(value, remaining);
+                document.getElementById('amount').value = adjustedValue;
+                document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    });
+
+    async function initializeSquare() {
+        const appId = '{{ env("SQUARE_APPLICATION_ID") }}';
+        const locationId = '{{ env("SQUARE_LOCATION_ID") }}';
+        
+        if (!squarePayments) {
+            try {
+                // Initialize Square payments
+                squarePayments = Square.payments(appId, locationId);
+                
+                // Initialize card
+                squareCard = await squarePayments.card();
+                
+                // Attach card to container
+                await squareCard.attach('#card-container');
+                
+                console.log('Square card form initialized and attached successfully');
+                isSquareCardReady = true;
+                document.getElementById('square-errors').textContent = '';
+                
+            } catch (error) {
+                console.error('Failed to initialize Square card:', error);
+                document.getElementById('square-errors').textContent = 'Failed to initialize payment form. Please try again or choose another payment method.';
+                isSquareCardReady = false;
+            }
+        } else if (squareCard && !isSquareCardReady) {
+            // Re-attach if needed
+            try {
+                await squareCard.attach('#card-container');
+                isSquareCardReady = true;
+                document.getElementById('square-errors').textContent = '';
+            } catch (error) {
+                console.error('Failed to re-attach Square card:', error);
+                isSquareCardReady = false;
+            }
+        }
+    }
+
+    function setPaymentMethod(value) {
+        document.getElementById('payment_method').value = value;
+        document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        const stripeElementDiv = document.getElementById('stripe-card-element');
+        const cardErrors = document.getElementById('card-errors');
+        const squareForm = document.getElementById('square-form');
+        const squareErrors = document.getElementById('square-errors');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // Reset all displays
+        stripeElementDiv.style.display = 'none';
+        cardErrors.style.display = 'none';
+        squareForm.style.display = 'none';
+        cardErrors.textContent = '';
+        squareErrors.textContent = '';
+        isSquareCardReady = false;
+
+        if (value === 'stripe') {
+            stripeElementDiv.style.display = 'block';
+            cardErrors.style.display = 'block';
+            
+            if (!cardElement) {
+                cardElement = elements.create('card');
+                cardElement.mount('#stripe-card-element');
+                cardElement.on('change', function(event) {
+                    const displayError = document.getElementById('card-errors');
+                    if (event.error) {
+                        displayError.textContent = event.error.message;
+                    } else {
+                        displayError.textContent = '';
                     }
+                });
+            }
+            submitBtn.disabled = false;
+            
+        } else if (value === 'square') {
+            squareForm.style.display = 'block';
+            
+            // Clean up Stripe if it exists
+            if (cardElement) {
+                cardElement.destroy();
+                cardElement = null;
+            }
+            
+            // Initialize Square with delay to ensure DOM is ready
+            setTimeout(() => {
+                initializeSquare();
+            }, 100);
+            
+            submitBtn.disabled = false;
+            
+        } else {
+            // Test donation - clean up any payment forms
+            if (cardElement) {
+                cardElement.destroy();
+                cardElement = null;
+            }
+            // Reset Square state
+            isSquareCardReady = false;
+            submitBtn.disabled = false;
+        }
+    }
 
-                    function setPaymentMethod(value) {
-                        document.getElementById('payment_method').value = value;
-                        document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('active'));
-                        event.target.classList.add('active');
-
-                        const cardElementDiv = document.getElementById('stripe-card-element');
-                        const cardErrors = document.getElementById('card-errors');
-                        const submitBtn = document.getElementById('submit-btn');
-
-                        if (value === 'stripe') {
-                            cardElementDiv.style.display = 'block';
-                            cardErrors.style.display = 'block';
-                            if (!cardElement) {
-                                cardElement = elements.create('card');
-                                cardElement.mount('#stripe-card-element');
-                                cardElement.on('change', function(event) {
-                                    const displayError = document.getElementById('card-errors');
-                                    if (event.error) {
-                                        displayError.textContent = event.error.message;
-                                    } else {
-                                        displayError.textContent = '';
-                                    }
-                                });
-                            }
-                            submitBtn.disabled = false;
-                        } else {
-                            cardElementDiv.style.display = 'none';
-                            cardErrors.style.display = 'none';
-                            cardErrors.textContent = '';
-                            if (cardElement) {
-                                cardElement.destroy();
-                                cardElement = null;
-                            }
-                            submitBtn.disabled = false;
-                        }
+    document.getElementById('donationForm').addEventListener('submit', async function(event) {
+        const paymentMethod = document.getElementById('payment_method').value;
+        
+        if (paymentMethod === 'stripe') {
+            event.preventDefault();
+            
+            if (!cardElement) {
+                document.getElementById('card-errors').textContent = 'Card element not initialized. Please try again.';
+                return;
+            }
+            
+            try {
+                const result = await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardElement,
+                });
+                
+                if (result.error) {
+                    document.getElementById('card-errors').textContent = result.error.message;
+                } else {
+                    // Add payment_method_id to form and submit
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'payment_method_id';
+                    hiddenInput.value = result.paymentMethod.id;
+                    this.appendChild(hiddenInput);
+                    this.submit();
+                }
+            } catch (error) {
+                console.error('Stripe error:', error);
+                document.getElementById('card-errors').textContent = 'An error occurred. Please try again.';
+            }
+            
+        } else if (paymentMethod === 'square') {
+            event.preventDefault();
+            
+            // Check if Square card is ready
+            if (!isSquareCardReady || !squareCard) {
+                document.getElementById('square-errors').textContent = 'Payment form is not ready. Please wait a moment and try again.';
+                return;
+            }
+            
+            try {
+                // Show loading state
+                const submitBtn = document.getElementById('submit-btn');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span>Processing...</span> <i class="fa-solid fa-spinner fa-spin"></i>';
+                submitBtn.disabled = true;
+                
+                const result = await squareCard.tokenize();
+                
+                if (result.status === 'OK') {
+                    document.getElementById('payment_source_id').value = result.token;
+                    this.submit();
+                } else {
+                    let errorMessage = 'Payment failed';
+                    if (result.errors && result.errors.length > 0) {
+                        errorMessage += ': ' + result.errors[0].message;
                     }
+                    document.getElementById('square-errors').textContent = errorMessage;
+                    
+                    // Reset button
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Square tokenization error:', error);
+                document.getElementById('square-errors').textContent = 'An error occurred during payment processing. Please try again.';
+                
+                // Reset button
+                const submitBtn = document.getElementById('submit-btn');
+                submitBtn.innerHTML = '<span>Donate Now</span> <i class="fa-solid fa-angles-right"></i>';
+                submitBtn.disabled = false;
+            }
+        }
+        // For 'test' method, let the form submit normally
+    });
 
-                    document.getElementById('donationForm').addEventListener('submit', function(event) {
-                        const paymentMethod = document.getElementById('payment_method').value;
-                        if (paymentMethod === 'stripe') {
-                            event.preventDefault();
-                            stripe.createPaymentMethod({
-                                type: 'card',
-                                card: cardElement,
-                            }).then(function(result) {
-                                if (result.error) {
-                                    document.getElementById('card-errors').textContent = result.error.message;
-                                } else {
-                                    // Add payment_method_id to form and submit
-                                    const hiddenInput = document.createElement('input');
-                                    hiddenInput.type = 'hidden';
-                                    hiddenInput.name = 'payment_method_id';
-                                    hiddenInput.value = result.paymentMethod.id;
-                                    this.appendChild(hiddenInput);
-                                    this.submit();
-                                }
-                            }.bind(this));
-                        }
-                    });
-                </script>
+    // Clean up when leaving the page
+    window.addEventListener('beforeunload', function() {
+        if (squareCard) {
+            squareCard.destroy();
+        }
+    });
+</script>
             @else
             <div class="donation-amount-area sub-bg mt-65">
                 <h3 class="mb-30">Please log in to make a donation</h3>
@@ -195,7 +350,3 @@
         </div>
     </div>
 @endsection
-
-
-
-
