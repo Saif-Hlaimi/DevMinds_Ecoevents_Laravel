@@ -127,11 +127,12 @@ class EventController extends Controller
 
         $event = Event::create($validated);
 
-        // 🔔 Notification à tous les utilisateurs
+    // 🔔 Notification à tous les utilisateurs
         $users = User::all();
         Notification::send($users, new EventCreatedNotification($event));
 
-        return redirect()->route('events.index')->with('success', 'Event created successfully.');
+    // Redirect to the newly created event so the user can immediately see it
+    return redirect()->route('events.show', $event)->with('success', 'Event created successfully.');
     }
 
 
@@ -259,7 +260,7 @@ class EventController extends Controller
 
         return back()->with('success', 'Your participation request has been sent.');
     }
-public function approve(Event $event, $userId)
+    public function approve(Event $event, $userId)
     {
         if (Auth::id() !== $event->user_id && Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
@@ -269,7 +270,6 @@ public function approve(Event $event, $userId)
 
         return back()->with('success', 'Participation approved.');
     }
-
     /**
      * Rejeter un participant (organisateur/admin).
      */
