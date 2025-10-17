@@ -177,6 +177,9 @@ Route::get('/groups/{slug}', [GroupController::class, 'show'])->name('groups.sho
 
 // Membership
 Route::middleware('auth')->group(function () {
+    // Group posts: create
+    Route::post('/groups/{slug}/posts', [GroupPostController::class, 'store'])->name('groups.posts.store');
+
     Route::post('/groups/{slug}/join', [MembershipController::class, 'join'])->name('groups.join');
     Route::post('/groups/{slug}/leave', [MembershipController::class, 'leave'])->name('groups.leave');
     Route::post('/groups/{slug}/requests/{requestId}/approve', [MembershipController::class, 'approve'])->name('groups.requests.approve');
@@ -187,6 +190,8 @@ Route::middleware('auth')->group(function () {
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 // Group posts routes (left intact but separated from Events)
 Route::middleware('auth')->group(function () {
+    // Group posts: reactions & comments & deletion
+    Route::post('/posts/{postId}/react', [GroupPostController::class, 'react'])->name('groups.posts.react');
     Route::post('/posts/{postId}/comment', [GroupPostController::class, 'comment'])->name('groups.posts.comment');
     Route::delete('/posts/{postId}', [GroupPostController::class, 'destroy'])->name('groups.posts.destroy');
 });
