@@ -13,6 +13,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ComplaintTypeController;
 use Laravel\Socialite\Facades\Socialite;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CRMContactController;
@@ -26,6 +27,15 @@ use App\Http\Controllers\Admin\EventAdminController;
 use App\Http\Controllers\Admin\DonationCauseAdminController;
 use App\Http\Controllers\Admin\GroupAdminController;
 use App\Http\Controllers\Api\GroupToolsController;
+use App\Http\Controllers\ComplaintController;
+use App\Http\Controllers\Admin\ComplaintAdminController;
+
+
+
+ 
+
+
+
 
 // Admin dashboard (Fabkin analytics) + CRUD pages
 Route::middleware(['auth', 'admin.only'])->group(function () {
@@ -36,7 +46,11 @@ Route::middleware(['auth', 'admin.only'])->group(function () {
         Route::post('/email', [EmailController::class, 'store'])->name('dashboard.email.store');
         Route::post('/email/{email}/read', [EmailController::class, 'markRead'])->name('dashboard.email.read');
         Route::delete('/email/{email}', [EmailController::class, 'destroy'])->name('dashboard.email.destroy');
+Route::get('/admin/complaints', [ComplaintAdminController::class, 'index'])->name('admin.complaints.index');
 
+Route::prefix('dashboard/admin')->name('admin.')->middleware(['auth', 'admin.only'])->group(function () {
+    Route::resource('complaints', ComplaintAdminController::class);
+});
         // Chat
         Route::get('/chat', [ChatController::class, 'index'])->name('dashboard.chat');
         Route::post('/chat', [ChatController::class, 'store'])->name('dashboard.chat.store');
@@ -268,3 +282,8 @@ Route::middleware('auth')->group(function () {
     // Route d'annulation
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 });
+Route::delete('/comments/{comment}', [EventController::class, 'destroyComment'])
+    ->name('comments.destroy')->middleware('auth');
+    Route::get('complaint-types', [ComplaintTypeController::class, 'index'])->name('complaint-types.index');
+Route::get('complaint-types/{complaintType}', [ComplaintTypeController::class, 'show'])->name('complaint-types.show');
+Route::resource('complaints', ComplaintController::class);

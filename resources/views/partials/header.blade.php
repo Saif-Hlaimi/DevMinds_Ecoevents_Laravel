@@ -50,6 +50,8 @@
                                 <span class="cart-count-badge badge bg-primary" style="display: none;">0</span>
                             </a>
                         </li>
+                        <li><a href="{{ route('complaint-types.index') }}">Complaints</a></li>
+
                         @auth
                             <li>
                                 <a href="{{ route('notifications.index') }}" class="position-relative">

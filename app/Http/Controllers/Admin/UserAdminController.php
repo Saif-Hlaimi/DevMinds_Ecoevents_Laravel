@@ -8,12 +8,20 @@ use Illuminate\Http\Request;
 
 class UserAdminController extends Controller
 {
-    public function index()
-    {
-        $users = User::latest()->paginate(15);
-        return view('admin.users', compact('users'));
-    }
+public function index()
+{
+    $users = User::latest()->paginate(15);
 
+    // Statistiques : nombre d'utilisateurs par rôle
+    $roleStats = User::selectRaw('role, COUNT(*) as count')
+        ->groupBy('role')
+        ->pluck('count', 'role');
+
+    return view('admin.users', [
+        'users' => $users,
+        'roleStats' => $roleStats,
+    ]);
+}
     public function update(Request $request, User $user)
     {
         $data = $request->validate([
@@ -35,4 +43,5 @@ class UserAdminController extends Controller
         $user->delete();
         return back()->with('success', 'User deleted');
     }
+    
 }
