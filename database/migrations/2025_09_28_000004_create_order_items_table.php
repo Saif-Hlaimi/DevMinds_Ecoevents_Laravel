@@ -13,6 +13,7 @@ class CreateOrderItemsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('order_items')) return;
         Schema::create('order_items', function (Blueprint $table) {
             $table->id(); // Auto-incrementing primary key
             $table->foreignId('order_id')->constrained()->onDelete('cascade'); // Foreign key to orders table

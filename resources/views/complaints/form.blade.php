@@ -3,11 +3,6 @@
 @section('content')
 <!-- Page banner area start here -->
 <section class="page-banner bg-image pt-130 pb-130">
-    <form action="{{ route('complaints.store') }}" method="POST" enctype="multipart/form-data">
-    @csrf
-    <input type="hidden" name="complaint_type_id" value="{{ $complaintType->id ?? '' }}">
-    <!-- autres champs : subject, message, etc. -->
-</form>
     <div class="container">
         <h2 class="wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s">
             {{ $complaint->exists ? 'Modifier la réclamation' : 'Nouvelle réclamation' }}
@@ -30,7 +25,7 @@
                 <div class="p-4" style="border: 1px solid #e5e7eb; border-radius: 12px;">
                     <h3 class="mb-4">{{ $complaint->exists ? 'Modifier la réclamation' : 'Nouvelle réclamation' }}</h3>
 
-                    <form method="post" enctype="multipart/form-data"
+                                        <form method="post" enctype="multipart/form-data"
                           action="{{ $complaint->exists ? route('complaints.update', $complaint) : route('complaints.store') }}">
                         @csrf
                         @if($complaint->exists)
@@ -66,21 +61,26 @@
                             <label class="form-label">Pièce jointe (optionnel)</label>
                             <input type="file" name="attachment" class="form-control">
                         </div>
-           <div class="mb-3">
-  <label class="form-label">Type de réclamation</label>
-  <select name="complaint_type_id" class="form-select" required>
-    <option value="" disabled @selected(! old('complaint_type_id', $complaint->complaint_type_id ?? null))>— Choisir —</option>
-    @foreach($types as $t)
-      <option value="{{ $t->id }}"
-        @selected(old('complaint_type_id', $complaint->complaint_type_id ?? null) == $t->id)>
-        {{ ucfirst($t->name) }}
-      </option>
-    @endforeach
-</select>
-@error('complaint_type_id')
-    <div class="text-danger small">{{ $message }}</div>
-@enderror
-</div>
+                        <div class="mb-3">
+                            <label class="form-label">Type de réclamation</label>
+                            @php $presetTypeId = old('complaint_type_id', $complaint->complaint_type_id ?? ($complaintType->id ?? null)); @endphp
+                            @if($presetTypeId)
+                                <input type="hidden" name="complaint_type_id" value="{{ $presetTypeId }}">
+                                <input type="text" class="form-control" value="{{ optional($types->firstWhere('id', $presetTypeId))->name ?? 'Type' }}" readonly>
+                            @else
+                                <select name="complaint_type_id" class="form-select" required>
+                                    <option value="" disabled selected>— Choisir —</option>
+                                    @foreach($types as $t)
+                                        <option value="{{ $t->id }}" @selected(old('complaint_type_id') == $t->id)>
+                                            {{ ucfirst($t->name) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('complaint_type_id')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            @endif
+                        </div>
                         <div class="d-flex gap-2">
     <!-- Bouton Enregistrer / Mettre à jour en vert -->
     <button class="btn-one" style="background-color: #28a745; border-color: #28a745;" type="submit">

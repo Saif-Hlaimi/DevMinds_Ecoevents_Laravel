@@ -25,6 +25,14 @@
         <div class="row">
             <!-- Liste de types à gauche -->
             <div class="col-lg-6 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Browse types</h4>
+                    @auth
+                        <a href="{{ route('complaints.create') }}" class="btn btn-success">
+                            <i class="fa fa-plus"></i> Add complaint
+                        </a>
+                    @endauth
+                </div>
                 @if($types->count())
                     <div class="row g-4">
                         @foreach($types as $type)

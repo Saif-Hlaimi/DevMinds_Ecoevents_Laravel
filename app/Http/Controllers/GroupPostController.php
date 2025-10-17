@@ -65,7 +65,10 @@ class GroupPostController extends Controller
     public function react(Request $request, int $postId)
     {
         $post = GroupPost::with('group')->findOrFail($postId);
-        $this->ensureMember($post->group);
+        // Allow reactions for all approved members; if group is public, allow any authenticated user
+        if (optional($post->group)->privacy !== 'public') {
+            $this->ensureMember($post->group);
+        }
         $data = $request->validate(['type' => ['required','in:like,dislike']]);
 
         $existing = GroupPostReaction::where('post_id',$postId)->where('user_id',Auth::id())->first();
@@ -145,9 +148,29 @@ class GroupPostController extends Controller
             abort_unless($isMember, 403);
         }
 
+        // If GD is missing, gracefully fallback to the print-friendly HTML page
+        if (!extension_loaded('gd')) {
+            return redirect()->route('groups.posts.print', ['postId' => $postId])
+                ->with('warning', 'PDF engine requires PHP GD extension. Opened print view instead — use your browser\'s "Save as PDF".');
+        }
+
+        // Prepare image data: embed local storage image as base64 to avoid remote HTTP fetch timeouts in Dompdf
+        $imageDataUri = null;
+        if (!empty($post->image_path) && \Illuminate\Support\Facades\Storage::disk('public')->exists($post->image_path)) {
+            try {
+                $mime = \Illuminate\Support\Facades\Storage::disk('public')->mimeType($post->image_path) ?: 'image/jpeg';
+                $bytes = \Illuminate\Support\Facades\Storage::disk('public')->get($post->image_path);
+                $imageDataUri = 'data:' . $mime . ';base64,' . base64_encode($bytes);
+            } catch (\Throwable $e) {
+                // Fallback to URL if any issue occurs
+                $imageDataUri = null;
+            }
+        }
+
         // Render Blade to HTML
         $html = view('pdf.post', [
             'post' => $post,
+            'imageDataUri' => $imageDataUri,
         ])->render();
 
         // Configure Dompdf
@@ -155,6 +178,24 @@ class GroupPostController extends Controller
         $options->set('isRemoteEnabled', true); // allow remote images
         $options->set('isHtml5ParserEnabled', true);
         $dompdf = new Dompdf($options);
+
+        // Reduce remote fetch timeout to avoid hanging when external image URLs are slow/unreachable
+        $context = stream_context_create([
+            'http' => [
+                'timeout' => 5,
+                'follow_location' => 1,
+                'header' => [
+                    'User-Agent: Mozilla/5.0',
+                    'Accept: */*'
+                ],
+            ],
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ],
+        ]);
+        $dompdf->setHttpContext($context);
+
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
@@ -163,6 +204,24 @@ class GroupPostController extends Controller
         return response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="'.$filename.'"'
+        ]);
+    }
+
+    // Simplest path: print-friendly HTML that users can Save as PDF via browser
+    public function print(int $postId)
+    {
+        $post = GroupPost::with(['user','group'])->findOrFail($postId);
+
+        if (optional($post->group)->privacy === 'private') {
+            $isMember = GroupMember::where('group_id', $post->group_id)
+                ->where('user_id', Auth::id())
+                ->where('status', 'approved')
+                ->exists();
+            abort_unless($isMember, 403);
+        }
+
+        return view('print.post', [
+            'post' => $post,
         ]);
     }
 }

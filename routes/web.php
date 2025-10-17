@@ -41,22 +41,24 @@ use App\Http\Controllers\Admin\ComplaintAdminController;
 Route::middleware(['auth', 'admin.only'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::prefix('dashboard')->group(function () {
-        // Email
-        Route::get('/email', [EmailController::class, 'index'])->name('dashboard.email');
-        Route::post('/email', [EmailController::class, 'store'])->name('dashboard.email.store');
-        Route::post('/email/{email}/read', [EmailController::class, 'markRead'])->name('dashboard.email.read');
-        Route::delete('/email/{email}', [EmailController::class, 'destroy'])->name('dashboard.email.destroy');
-Route::get('/admin/complaints', [ComplaintAdminController::class, 'index'])->name('admin.complaints.index');
-
-Route::prefix('dashboard/admin')->name('admin.')->middleware(['auth', 'admin.only'])->group(function () {
-    Route::resource('complaints', ComplaintAdminController::class);
-});
-        // Chat
-        Route::get('/chat', [ChatController::class, 'index'])->name('dashboard.chat');
-        Route::post('/chat', [ChatController::class, 'store'])->name('dashboard.chat.store');
-        Route::delete('/chat/{message}', [ChatController::class, 'destroy'])->name('dashboard.chat.destroy');
-
-        // Calendar (uses existing Event model)
+        // Events
+        Route::get('/events', [EventController::class, 'index'])->name('events.index');
+        // Define create BEFORE wildcard and attach auth explicitly
+        Route::get('/events/create', [EventController::class, 'create'])->middleware('auth')->name('events.create');
+        // Store (auth)
+        Route::post('/events', [EventController::class, 'store'])->middleware('auth')->name('events.store');
+        // Edit/Update/Delete (auth + numeric id)
+        Route::get('/events/{event}/edit', [EventController::class, 'edit'])->middleware('auth')->whereNumber('event')->name('events.edit');
+        Route::put('/events/{event}', [EventController::class, 'update'])->middleware('auth')->whereNumber('event')->name('events.update');
+        Route::delete('/events/{event}', [EventController::class, 'destroy'])->middleware('auth')->whereNumber('event')->name('events.destroy');
+        // Event participation (auth + numeric id)
+        Route::post('/events/{event}/register', [EventController::class, 'register'])->middleware('auth')->whereNumber('event')->name('events.register');
+        Route::delete('/events/{event}/register', [EventController::class, 'unregister'])->middleware('auth')->whereNumber('event')->name('events.unregister');
+        // Comments (auth + numeric event id for store; comment id for delete)
+        Route::post('/events/{event}/comment', [EventController::class, 'storeComment'])->middleware('auth')->whereNumber('event')->name('comments.store');
+        Route::delete('/comments/{comment}', [EventController::class, 'destroyComment'])->middleware('auth')->name('comments.destroy');
+        // Show must be after /events/create to avoid catching it, and enforce numeric IDs
+        Route::get('/events/{event}', [EventController::class, 'show'])->whereNumber('event')->name('events.show');
         Route::get('/calendar', [CalendarController::class, 'index'])->name('dashboard.calendar');
         Route::post('/calendar', [CalendarController::class, 'store'])->name('dashboard.calendar.store');
         Route::delete('/calendar/{event}', [CalendarController::class, 'destroy'])->name('dashboard.calendar.destroy');
@@ -139,8 +141,7 @@ Route::view('/donation', 'pages.donation-single')->name('donation.single');
 Route::view('/blog', 'pages.blog')->name('blog');
 Route::view('/blog-post', 'pages.blog-single')->name('blog.single');
 
-Route::view('/events', 'pages.events')->name('events');
-Route::view('/event', 'pages.event-single')->name('event.single');
+// Removed legacy static event pages to avoid route conflicts with real EventController routes
 
 Route::view('/team', 'pages.team')->name('team');
 Route::view('/team-member', 'pages.team-single')->name('team.single');
@@ -149,20 +150,20 @@ Route::view('/faq', 'pages.faq')->name('faq');
 Route::view('/error', 'pages.error-page')->name('error.page');
 
 // Authentication routes
-Route::middleware('guest')->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+    Route::get('/events/{event}/edit', [EventController::class, 'edit'])->whereNumber('event')->name('events.edit');
+    Route::put('/events/{event}', [EventController::class, 'update'])->whereNumber('event')->name('events.update');
+    Route::delete('/events/{event}', [EventController::class, 'destroy'])->whereNumber('event')->name('events.destroy');
 
-    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.store');
-
-    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
-    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
-    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::post('/events/{event}/register', [EventController::class, 'register'])->whereNumber('event')->name('events.register');
+    Route::delete('/events/{event}/register', [EventController::class, 'unregister'])->whereNumber('event')->name('events.unregister');
+    Route::post('/events/{event}/comment', [EventController::class, 'storeComment'])->whereNumber('event')->name('comments.store');
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 
-    // Google OAuth routes
-    Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
+// Show must be after /events/create to avoid catching it, and enforce numeric IDs
+Route::get('/events/{event}', [EventController::class, 'show'])->whereNumber('event')->name('events.show');
     Route::get('/auth/google-callback', [AuthController::class, 'handleGoogleCallback']);
 
     // Facebook OAuth routes
@@ -198,17 +199,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/groups/{slug}/requests/{requestId}/reject', [MembershipController::class, 'reject'])->name('groups.requests.reject');
 });
 
-// Posts
+// Events
+Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::middleware('auth')->group(function () {
-    Route::post('/groups/{slug}/posts', [GroupPostController::class, 'store'])->name('groups.posts.store');
-    Route::post('/posts/{postId}/react', [GroupPostController::class, 'react'])->name('groups.posts.react');
     Route::post('/posts/{postId}/comment', [GroupPostController::class, 'comment'])->name('groups.posts.comment');
     Route::delete('/posts/{postId}', [GroupPostController::class, 'destroy'])->name('groups.posts.destroy');
 });
 Route::get('/posts/{postId}/pdf', [GroupPostController::class, 'pdf'])->name('groups.posts.pdf');
+Route::get('/posts/{postId}/print', [GroupPostController::class, 'print'])->name('groups.posts.print');
+    // Event participation
+    Route::post('/events/{event}/register', [EventController::class, 'register'])->name('events.register');
+    Route::delete('/events/{event}/register', [EventController::class, 'unregister'])->name('events.unregister');
 
 // API tools for groups
 Route::middleware('auth')->group(function () {
+// Show must be after /events/create to avoid catching it
+Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
     Route::post('/api/inspire', [GroupToolsController::class, 'inspireGeneric'])->name('api.inspire');
     Route::post('/api/groups/{slug}/inspire', [GroupToolsController::class, 'inspire'])->name('api.groups.inspire');
     Route::post('/api/moderate', [GroupToolsController::class, 'moderate'])->name('api.moderate');
@@ -236,6 +242,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
     Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+    // Event participation
+    Route::post('/events/{event}/register', [EventController::class, 'register'])->name('events.register');
+    Route::delete('/events/{event}/register', [EventController::class, 'unregister'])->name('events.unregister');
     Route::post('/events/{event}/comment', [EventController::class, 'storeComment'])->name('comments.store');
     Route::delete('/comments/{comment}', [EventController::class, 'destroyComment'])->name('comments.destroy');
 });
@@ -256,8 +265,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/cart/update/{item}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/remove/{item}', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
-    Route::get('/cart/content', [CartController::class, 'getCartContent'])->name('cart.content');
 });
+// Allow cart content to be fetched via AJAX for guests (uses session_id)
+Route::get('/cart/content', [CartController::class, 'content'])->name('cart.content');
 
 // Orders
 Route::middleware('auth')->group(function () {
@@ -282,8 +292,7 @@ Route::middleware('auth')->group(function () {
     // Route d'annulation
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 });
-Route::delete('/comments/{comment}', [EventController::class, 'destroyComment'])
-    ->name('comments.destroy')->middleware('auth');
+// Duplicate comments destroy route removed; defined above in auth group
     Route::get('complaint-types', [ComplaintTypeController::class, 'index'])->name('complaint-types.index');
 Route::get('complaint-types/{complaintType}', [ComplaintTypeController::class, 'show'])->name('complaint-types.show');
 Route::resource('complaints', ComplaintController::class);

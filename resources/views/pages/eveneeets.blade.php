@@ -14,8 +14,8 @@
 					<div class="col-lg-4 col-md-6">
 						<div class="donation__item bor">
 							<div class="image mb-30"><img src="{{ asset('assets/images/event/'.sprintf('0%d.jpg',$i)) }}" alt="image"></div>
-							<h3><a href="{{ route('event.single') }}">Sample event {{ $i }}</a></h3>
-							<a class="donation__item-arrow" href="{{ route('event.single') }}"><i class="fa-solid fa-arrow-right"></i></a>
+							<h3><a href="{{ route('events.index') }}">Sample event {{ $i }}</a></h3>
+							<a class="donation__item-arrow" href="{{ route('events.index') }}"><i class="fa-solid fa-arrow-right"></i></a>
 						</div>
 					</div>
 				@endforeach

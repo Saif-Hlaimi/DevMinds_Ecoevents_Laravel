@@ -73,7 +73,5 @@ return [
         'secret' => env('STRIPE_SECRET'),
     ],
 
-    'gemini' => [
-        'api_key' => env('GEMINI_API_KEY'),
-    ]
+    // moved above; avoid duplicate key
 ];

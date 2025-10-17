@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\OrderItem;
 use App\Models\ProductView;
 use App\Models\Product;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Cache;
 
 class RecommendationService
 {
@@ -31,20 +33,40 @@ class RecommendationService
      */
     public function getRecommendations($userId, $currentProductId = null, $orderId = null)
     {
-        // Récupérer l'historique d'achats
-        $purchasedProducts = OrderItem::whereHas('order', function ($query) use ($userId) {
-            $query->where('user_id', $userId)->where('payment_status', '!=', 'cancelled');
-        })->with('product')->get()->pluck('product.name')->unique()->implode(', ');
+        // Cache key (10 minutes) to avoid recomputing for each page load
+        $cacheKey = 'reco:u:'.($userId ?: 'guest').':p:'.($currentProductId ?: 'none').':o:'.($orderId ?: 'none');
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($userId, $currentProductId, $orderId) {
+        // Guests: skip personalized data
+        if (empty($userId)) {
+            $purchasedProducts = '';
+            $viewedProducts = '';
+        } else {
+            // Récupérer l'historique d'achats en évitant les colonnes manquantes (ex. user_id sur orders)
+            $purchasedQuery = OrderItem::query();
+            if (Schema::hasColumn('orders', 'id')) {
+                $purchasedQuery = $purchasedQuery->whereHas('order', function ($query) use ($userId) {
+                    // Filtrer par utilisateur si la colonne existe
+                    if (Schema::hasColumn('orders', 'user_id')) {
+                        $query->where('user_id', $userId);
+                    }
+                    // Exclure annulées si la colonne existe
+                    if (Schema::hasColumn('orders', 'payment_status')) {
+                        $query->where('payment_status', '!=', 'cancelled');
+                    }
+                });
+            }
+            $purchasedProducts = $purchasedQuery->with('product')->get()->pluck('product.name')->unique()->implode(', ');
 
-        // Récupérer l'historique de vues
-        $viewedProducts = ProductView::where('user_id', $userId)
-            ->with('product')
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get()
-            ->pluck('product.name')
-            ->unique()
-            ->implode(', ');
+            // Récupérer l'historique de vues
+            $viewedProducts = ProductView::where('user_id', $userId)
+                ->with('product')
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get()
+                ->pluck('product.name')
+                ->unique()
+                ->implode(', ');
+        }
 
         // Contextualiser avec le produit actuel ou la commande
         $context = '';
@@ -58,16 +80,32 @@ class RecommendationService
             $context = "L'utilisateur a récemment commandé : {$orderItems}. ";
         }
 
+        // Réduire la taille du catalogue pour la requête et accélérer
+        $catalogSample = Product::where('quantity', '>', 0)
+            ->orderBy('created_at', 'desc')
+            ->limit(150)
+            ->pluck('name')
+            ->implode(', ');
+
         // Préparer le prompt pour Gemini
         $prompt = "Basé sur l'historique d'achats : {$purchasedProducts} et les produits consultés : {$viewedProducts}. {$context}"
                 . "Recommande 3 à 5 produits similaires ou complémentaires de notre catalogue. "
-                . "Catalogue disponible : " . Product::pluck('name')->implode(', ') . ". "
+                . "Catalogue disponible : {$catalogSample}. "
                 . "Réponds uniquement avec une liste JSON de noms de produits exacts, sans texte supplémentaire.";
 
         try {
+            // Si l'API key est absente, éviter l'appel réseau
+            if (empty($this->apiKey)) {
+                throw new \RuntimeException('Missing GEMINI_API_KEY');
+            }
+
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post("{$this->endpoint}/{$this->model}:generateContent?key={$this->apiKey}", [
+            ])
+            ->timeout(4)
+            ->connectTimeout(2)
+            ->retry(1, 200)
+            ->post("{$this->endpoint}/{$this->model}:generateContent?key={$this->apiKey}", [
                 'contents' => [
                     [
                         'parts' => [
@@ -85,10 +123,11 @@ class RecommendationService
                 return Product::whereIn('name', $recommendedNames)->where('quantity', '>', 0)->get();
             }
         } catch (\Exception $e) {
-            Log::error('Erreur Gemini API: ' . $e->getMessage());
+            Log::warning('Recommandations: fallback used. Reason: ' . $e->getMessage());
         }
 
         // Fallback : recommandations aléatoires
         return Product::inRandomOrder()->where('quantity', '>', 0)->limit(5)->get();
+        });
     }
 }

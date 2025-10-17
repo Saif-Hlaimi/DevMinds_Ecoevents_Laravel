@@ -6,13 +6,11 @@
 <!-- === Bannière === -->
 <section class="page-banner bg-image pt-130 pb-130">
   <div class="container">
-    <h2 class="wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s">
-      {{ $complaint->exists ? 'Détails de la réclamation' : 'Nouvelle réclamation' }}
-    </h2>
+        <h2 class="wow fadeInUp" data-wow-duration="1.2s" data-wow-delay=".2s">Mes réclamations</h2>
     <div class="breadcrumb-list wow fadeInUp" data-wow-duration="1.4s" data-wow-delay=".4s">
       <a href="{{ route('home') }}">Home :</a>
       <a href="{{ route('complaints.index') }}">Réclamations :</a>
-      <span class="primary-color">{{ $complaint->exists ? 'Détail' : 'Création' }}</span>
+    <span class="primary-color">Liste</span>
     </div>
   </div>
 </section>

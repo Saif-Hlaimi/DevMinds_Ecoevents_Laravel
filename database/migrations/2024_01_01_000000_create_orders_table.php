@@ -13,6 +13,9 @@ class CreateOrdersTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('orders')) {
+            return;
+        }
         Schema::create('orders', function (Blueprint $table) {
             $table->id(); // Auto-incrementing primary key
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Foreign key to users table
@@ -43,6 +46,8 @@ class CreateOrdersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('orders');
+        if (Schema::hasTable('orders')) {
+            Schema::drop('orders');
+        }
     }
 }
