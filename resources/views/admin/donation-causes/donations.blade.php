@@ -5,7 +5,13 @@
 <div class="container-fluid">
   <h3 class="mb-3">Donations for {{ $donationCause->title }}</h3>
   <div class="mb-3">
-    <a href="{{ route('dashboard.admin.donation-causes.donation-causes') }}" class="btn btn-secondary btn-sm">Back to Causes</a>
+    <a href="{{ route('dashboard.admin.donation-causes.donation-causes') }}" class="btn btn-secondary btn-sm me-2">Back to Causes</a>
+    <a href="{{ route('dashboard.admin.donation-causes.donations', [$donationCause, 'sort' => 'amount_asc']) }}" class="btn btn-outline-primary btn-sm {{ request('sort') === 'amount_asc' ? 'active' : '' }}">
+      Sort by Amount (Low to High)
+    </a>
+    <a href="{{ route('dashboard.admin.donation-causes.donations', [$donationCause, 'sort' => 'date_asc']) }}" class="btn btn-outline-primary btn-sm {{ request('sort') === 'date_asc' ? 'active' : '' }}">
+      Sort by Date (Old to New)
+    </a>
   </div>
   @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
@@ -46,7 +52,7 @@
         </tbody>
       </table>
     </div>
-    <div class="card-footer">{{ $donations->links() }}</div>
+    <div class="card-footer">{{ $donations->appends(request()->query())->links() }}</div>
   </div>
 </div>
 @endsection

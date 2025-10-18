@@ -73,7 +73,7 @@
                     @enderror
                     <h3 class="mb-30">Select payment Method</h3>
                     <div class="payment-btns mb-65">
-                        <button type="button" class="payment-btn active" onclick="setPaymentMethod('test')">Test Donation</button>
+                        <button type="button" class="payment-btn active" onclick="setPaymentMethod('test')">Direct Donation</button>
                         <button type="button" class="payment-btn" onclick="setPaymentMethod('stripe')">Stripe - Credit Card</button>
                         <button type="button" class="payment-btn" onclick="setPaymentMethod('square')">Square - Credit Card</button>
                     </div>

@@ -15,11 +15,7 @@
     <!-- Donation area start here -->
     <section class="donation-inner pb-130">
         <div class="container">
-            @auth
-            <div class="mb-4 mt-4">
-               <a href="{{ route('donation-causes.create') }}" class="btn-one"><span>Create New Donation Cause</span> <i class="fa-solid fa-plus"></i></a>
-            </div>
-            @endauth
+           
             <div class="row g-4">
                 @forelse ($donationCauses as $cause)
                     @php
@@ -42,16 +38,7 @@
                             <p class="text-muted">{{ $cause->sdg }}</p>
                             <div class="d-flex justify-content-between align-items-center mt-3">
                                 <a class="donation__item-arrow" href="{{ route('donation-causes.show', $cause->id) }}"><i class="fa-solid fa-arrow-right"></i></a>
-                                @auth
-                                    <div>
-                                        <a href="{{ route('donation-causes.edit', $cause->id) }}" class="btn-one btn-sm me-2"><span>Edit</span> <i class="fa-solid fa-pen"></i></a>
-                                        <form action="{{ route('donation-causes.destroy', $cause->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this donation cause?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn-one btn-sm"><span>Delete</span> <i class="fa-solid fa-trash"></i></button>
-                                        </form>
-                                    </div>
-                                @endauth
+                              
                             </div>
                         </div>
                     </div>

@@ -93,7 +93,9 @@ Route::middleware(['auth','admin.only'])->group(function () {
             Route::delete('/admin/donation-causes/{donationCause}', [DonationCauseAdminController::class, 'destroy'])->name('dashboard.admin.donation-causes.destroy'); 
             Route::get('/admin/donation-causes/{donationCause}/donations', [DonationCauseAdminController::class, 'donations'])->name('dashboard.admin.donation-causes.donations');
             Route::delete('/admin/donation-causes/{donationCause}/donations/{donation}', [DonationCauseAdminController::class, 'destroyDonation'])->name('admin.donations.destroy');
-           // Admin: Groups
+            Route::post('/admin/donation-causes/generate-image', [DonationCauseAdminController::class, 'generateImage'])->name('dashboard.admin.donation-causes.generate-image');
+            Route::post('/admin/donation-causes/generate-description', [DonationCauseAdminController::class, 'generateDescription'])->name('dashboard.admin.donation-causes.generate-description');
+            // Admin: Groups
             Route::get('/admin/groups', [GroupAdminController::class, 'index'])->name('dashboard.admin.groups');
             Route::put('/admin/groups/{group}', [GroupAdminController::class, 'update'])->name('dashboard.admin.groups.update');
             Route::delete('/admin/groups/{group}', [GroupAdminController::class, 'destroy'])->name('dashboard.admin.groups.destroy');
