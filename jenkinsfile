@@ -25,7 +25,38 @@ pipeline {
             }
         }
         
-
+        stage('Build Artifact') {
+            steps {
+                echo "Building Laravel artifact..."
+                sh '''
+                    composer install --no-dev --optimize-autoloader
+                    npm ci
+                    npm run build
+                    zip -r ecoevents-artifact-${BUILD_NUMBER}.zip . -x "node_modules/*" "vendor/*" ".git/*" "storage/*" ".env*"
+                '''
+            }
+        }
+        
+        stage('Publish to Nexus') {
+            steps {
+                echo "Uploading artifact to Nexus..."
+                nexusArtifactUploader(
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    nexusUrl: '192.168.33.10:8081', 
+                    groupId: 'com.devminds',
+                    version: "${BUILD_NUMBER}",
+                    repository: 'maven-releases',  
+                    credentialsId: 'nexus-credentials',  
+                    artifacts: [
+                        [artifactId: 'ecoevents-laravel',
+                         classifier: '',
+                         file: 'ecoevents-artifact-${BUILD_NUMBER}.zip',
+                         type: 'zip']
+                    ]
+                )
+            }
+        }
     }
     
     post {
@@ -33,10 +64,10 @@ pipeline {
             echo "Pipeline completed. Check SonarQube dashboard for detailed report: http://192.168.33.10:9000/dashboard?id=DevMinds_Ecoevents_Laravel"
         }
         success {
-            echo "Quality gate passed! Ready for next steps (e.g., build or Nexus upload)."
+            echo "Artifact published to Nexus! Ready for deploy."
         }
         failure {
-            echo "Pipeline failed. Review SonarQube issues."
+            echo "Pipeline failed. Review SonarQube or build logs."
         }
         unstable {
             echo "Pipeline unstable (e.g., Quality Gate warning). Proceed with caution."
