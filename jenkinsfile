@@ -17,8 +17,7 @@ pipeline {
             
                     withSonarQubeEnv('sq1') {
                 
-                        sh 'sonar-scanner -Dsonar.projectKey=DevMinds_Ecoevents_Laravel -Dsonar.sources=.'
-                    }
+                       sh 'sonar-scanner'
                 }
             }
         }
