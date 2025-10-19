@@ -9,12 +9,15 @@ pipeline {
             }
         }
         
-        stage('SonarQube Analysis') {
+            stage('SonarQube Analysis') {
             steps {
                 echo "Running static code analysis with SonarQube..."
                 script {
+                    def scannerHome = tool 'SonarScanner'  // References the global tool from Step 1
                     withSonarQubeEnv('sq1') {
-                        sh 'sonar-scanner'
+                        withEnv(["PATH+SONAR=${scannerHome}/bin"]) {
+                            sh "${scannerHome}/bin/sonar-scanner"  // Uses managed scanner
+                        }
                     }
                 }
             }
