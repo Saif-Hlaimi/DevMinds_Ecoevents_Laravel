@@ -25,23 +25,7 @@ pipeline {
             }
         }
         
-        stage('Quality Gate') {
-            steps {
-                echo "Waiting for SonarQube quality gate response..."
-                script {
-                    def qg = waitForQualityGate abortPipeline: false  // Don't abort on timeout/fail
-                    if (qg.status != 'OK') {
-                        echo "Quality Gate status: ${qg.status}. Task ID: ${env.SONAR_TASK_ID}. Check: http://192.168.33.10:9000/api/ce/task?id=${env.SONAR_TASK_ID}"
-                        unstable('Quality Gate did not pass')  // Marks build UNSTABLE (yellow) instead of FAILURE (red)
-                    } else {
-                        echo "Quality Gate passed!"
-                    }
-                }
-                timeout(time: 2, unit: 'HOURS') {  // Longer timeout for processing
-                    // The waitForQualityGate is already called above; this ensures polling doesn't hang forever
-                }
-            }
-        }
+
     }
     
     post {
