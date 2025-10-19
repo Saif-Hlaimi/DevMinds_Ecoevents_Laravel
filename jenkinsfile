@@ -3,6 +3,7 @@ pipeline {
 
     stages {
         stage('Checkout') {
+            // This stage checks out the code from the SCM repository
             steps {
                 checkout scm
                 echo "Checked out code from ${env.GIT_URL}"
