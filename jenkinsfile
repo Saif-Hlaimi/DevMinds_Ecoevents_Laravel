@@ -15,7 +15,7 @@ pipeline {
                 echo "Running static code analysis with SonarQube..."
                 script {
             
-                    withSonarQubeEnv('SonarQube') {
+                    withSonarQubeEnv('sq1') {
                 
                         sh 'sonar-scanner -Dsonar.projectKey=DevMinds_Ecoevents_Laravel -Dsonar.sources=.'
                     }
