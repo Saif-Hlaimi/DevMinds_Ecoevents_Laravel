@@ -3,11 +3,46 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            // This stage checks out the code from the SCM repository
+        
             steps {
                 checkout scm
                 echo "Checked out code from ${env.GIT_URL}"
             }
+        }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                echo "Running static code analysis with SonarQube..."
+                script {
+            
+                    withSonarQubeEnv('SonarQube') {
+                
+                        sh 'sonar-scanner -Dsonar.projectKey=DevMinds_Ecoevents_Laravel -Dsonar.sources=.'
+                    }
+                }
+            }
+        }
+        
+        stage('Quality Gate') {
+            steps {
+                echo "Waiting for SonarQube quality gate response..."
+                timeout(time: 1, unit: 'HOURS') {
+                
+                    waitForQualityGate abortPipeline: true 
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo "Pipeline completed. Check SonarQube dashboard for detailed report."
+        }
+        success {
+            echo "Quality gate passed! Ready for next steps (e.g., build or Nexus upload)."
+        }
+        failure {
+            echo "Quality gate failed. Review issues in SonarQube."
         }
     }
 }
