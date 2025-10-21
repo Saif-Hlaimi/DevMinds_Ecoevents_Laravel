@@ -47,6 +47,17 @@ Route::middleware(['auth', 'admin.only'])->group(function () {
         Route::post('/calendar', [CalendarController::class, 'store'])->name('dashboard.calendar.store');
         Route::delete('/calendar/{event}', [CalendarController::class, 'destroy'])->name('dashboard.calendar.destroy');
 
+    // Email
+    Route::get('/email', [EmailController::class, 'index'])->name('dashboard.email');
+    Route::post('/email', [EmailController::class, 'store'])->name('dashboard.email.store');
+    Route::post('/email/{email}/read', [EmailController::class, 'markRead'])->name('dashboard.email.read');
+    Route::delete('/email/{email}', [EmailController::class, 'destroy'])->name('dashboard.email.destroy');
+
+    // Chat
+    Route::get('/chat', [ChatController::class, 'index'])->name('dashboard.chat');
+    Route::post('/chat', [ChatController::class, 'store'])->name('dashboard.chat.store');
+    Route::delete('/chat/{message}', [ChatController::class, 'destroy'])->name('dashboard.chat.destroy');
+
         // E-commerce
         Route::get('/ecommerce/products', [AdminProductController::class, 'index'])->name('dashboard.ecommerce.products');
         Route::post('/ecommerce/products', [AdminProductController::class, 'store'])->name('dashboard.ecommerce.products.store');
@@ -102,6 +113,13 @@ Route::middleware(['auth', 'admin.only'])->group(function () {
         Route::get('/admin/groups', [GroupAdminController::class, 'index'])->name('dashboard.admin.groups');
         Route::put('/admin/groups/{group}', [GroupAdminController::class, 'update'])->name('dashboard.admin.groups.update');
         Route::delete('/admin/groups/{group}', [GroupAdminController::class, 'destroy'])->name('dashboard.admin.groups.destroy');
+
+        // Complaints (Admin)
+        Route::get('/admin/complaints', [ComplaintAdminController::class, 'index'])->name('admin.complaints.index');
+        Route::get('/admin/complaints/{complaint}', [ComplaintAdminController::class, 'show'])->name('admin.complaints.show');
+        Route::get('/admin/complaints/{complaint}/edit', [ComplaintAdminController::class, 'edit'])->name('admin.complaints.edit');
+        Route::put('/admin/complaints/{complaint}', [ComplaintAdminController::class, 'update'])->name('admin.complaints.update');
+        Route::delete('/admin/complaints/{complaint}', [ComplaintAdminController::class, 'destroy'])->name('admin.complaints.destroy');
     });
 });
 
