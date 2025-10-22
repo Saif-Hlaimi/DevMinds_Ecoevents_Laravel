@@ -120,8 +120,23 @@ Route::middleware(['auth', 'admin.only'])->group(function () {
         Route::get('/admin/complaints/{complaint}/edit', [ComplaintAdminController::class, 'edit'])->name('admin.complaints.edit');
         Route::put('/admin/complaints/{complaint}', [ComplaintAdminController::class, 'update'])->name('admin.complaints.update');
         Route::delete('/admin/complaints/{complaint}', [ComplaintAdminController::class, 'destroy'])->name('admin.complaints.destroy');
+            Route::get('/admin/donation-causes/donation-causes', [DonationCauseAdminController::class, 'index'])->name('dashboard.admin.donation-causes.donation-causes');
+            Route::get('/admin/donation-causes/create', [DonationCauseAdminController::class, 'create'])->name('dashboard.admin.donation-causes.create');
+            Route::post('/admin/donation-causes/donation-causes', [DonationCauseAdminController::class, 'store'])->name('dashboard.admin.donation-causes.store');
+            Route::get('/admin/donation-causes/{donationCause}/edit', [DonationCauseAdminController::class, 'edit'])->name('dashboard.admin.donation-causes.edit');
+            Route::put('/admin/donation-causes/{donationCause}', [DonationCauseAdminController::class, 'update'])->name('dashboard.admin.donation-causes.update');
+            Route::delete('/admin/donation-causes/{donationCause}', [DonationCauseAdminController::class, 'destroy'])->name('dashboard.admin.donation-causes.destroy'); 
+            Route::get('/admin/donation-causes/{donationCause}/donations', [DonationCauseAdminController::class, 'donations'])->name('dashboard.admin.donation-causes.donations');
+            Route::delete('/admin/donation-causes/{donationCause}/donations/{donation}', [DonationCauseAdminController::class, 'destroyDonation'])->name('admin.donations.destroy');
+            Route::post('/admin/donation-causes/generate-image', [DonationCauseAdminController::class, 'generateImage'])->name('dashboard.admin.donation-causes.generate-image');
+            Route::post('/admin/donation-causes/generate-description', [DonationCauseAdminController::class, 'generateDescription'])->name('dashboard.admin.donation-causes.generate-description');
+            // Admin: Groups
+            Route::get('/admin/groups', [GroupAdminController::class, 'index'])->name('dashboard.admin.groups');
+            Route::put('/admin/groups/{group}', [GroupAdminController::class, 'update'])->name('dashboard.admin.groups.update');
+            Route::delete('/admin/groups/{group}', [GroupAdminController::class, 'destroy'])->name('dashboard.admin.groups.destroy');
+        });
     });
-});
+
 
 // Render Blade homepage
 Route::get('/', function () {
