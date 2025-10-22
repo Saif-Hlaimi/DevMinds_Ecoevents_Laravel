@@ -63,6 +63,23 @@
                 </div>
             </div>
         </div>
+<div class="card mt-3 shadow-sm border-0">
+    <div class="card-header bg-white fw-semibold">Complaints by Type</div>
+    <div class="card-body">
+        @if(!empty($stats['complaints_by_type']))
+            <ul class="list-group list-group-flush">
+                @foreach($stats['complaints_by_type'] as $type => $count)
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="text-capitalize">{{ $type }}</span>
+                        <span class="badge bg-secondary rounded-pill">{{ $count }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        @else
+            <p class="text-muted mb-0">No complaints recorded</p>
+        @endif
+    </div>
+</div>
 
         <!-- Commandes récentes -->
         <div class="row g-3 mt-3">
@@ -157,6 +174,8 @@
                 </div>
             </div>
 
+
+            
             <div class="col-12 col-md-6 col-xl-3">
                 <div class="card h-100 shadow-sm border-0">
                     <div class="card-body">
@@ -193,6 +212,7 @@
             </div>
         </div>
     </div>
+    
 @endsection
 
 @push('scripts')

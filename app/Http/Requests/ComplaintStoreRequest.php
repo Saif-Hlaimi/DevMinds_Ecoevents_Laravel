@@ -10,7 +10,7 @@ class ComplaintStoreRequest extends FormRequest {
         return [
             'subject'=>'required|string|max:160',
             'message'=>'required|string|min:5',
-            'category'=>'nullable|string|max:60',
+'category' => ['required', 'in:general,personal,technical,billing'],
             'priority'=>'nullable|in:low,medium,high',
             'attachment'=>'nullable|file|max:8192',
         ];

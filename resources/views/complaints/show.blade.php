@@ -64,10 +64,11 @@
                 <i class="fa-solid fa-signal"></i> {{ $complaint->priority }}
               </span>
             </li>
-            <li class="list-inline-item me-3">
-              <i class="fa-solid fa-layer-group text-success"></i>
-              <strong>Catégorie :</strong> {{ ucfirst($complaint->category) }}
-            </li>
+           <li class="list-inline-item me-3">
+    <i class="fa-solid fa-layer-group text-success"></i>
+    <strong>Category:</strong> {{ ucfirst($complaint->category) }}
+</li>
+
             
             
           </ul>
@@ -92,47 +93,7 @@
           </div>
         @endif
 
-        <!-- Section admin -->
-        @can('update',$complaint)
-        @if(auth()->user()->role === 'admin')
-        <hr class="my-4">
-        <h5 class="fw-bold mb-3 text-success">
-          <i class="fa-solid fa-gears me-2"></i>Gestion administrative
-        </h5>
-
-        <form method="post" action="{{ route('complaints.update',$complaint) }}">
-          @csrf @method('put')
-          <div class="row g-3">
-            <div class="col-md-4">
-              <label class="form-label">Statut</label>
-              <select name="status" class="form-select shadow-sm">
-                @foreach(['open','pending','resolved','closed'] as $s)
-                  <option @selected($complaint->status===$s)>{{ $s }}</option>
-                @endforeach
-              </select>
-            </div>
-
-            <div class="col-md-4">
-              <label class="form-label">Priorité</label>
-              <select name="priority" class="form-select shadow-sm">
-                @foreach(['low','medium','high'] as $p)
-                  <option @selected($complaint->priority===$p)>{{ $p }}</option>
-                @endforeach
-              </select>
-            </div>
-
-            <div class="col-md-4">
-              <label class="form-label">Assigner à (ID utilisateur)</label>
-              <input name="assigned_to" class="form-control shadow-sm" value="{{ $complaint->assigned_to }}">
-            </div>
-          </div>
-
-          <button class="btn btn-success mt-3 px-4">
-            <i class="fa-solid fa-floppy-disk me-1"></i> Mettre à jour
-          </button>
-        </form>
-        @endif
-        @endcan
+        
 
       </div>
     </div>

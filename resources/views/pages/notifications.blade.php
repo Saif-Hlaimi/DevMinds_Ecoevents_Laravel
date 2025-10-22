@@ -9,6 +9,11 @@
             <button class="btn btn-sm btn-outline-success">Mark all as read</button>
         </form>
     </div>
+    @if(isset($data['complaint_id']))
+    <a href="{{ route('complaints.show', $data['complaint_id']) }}" class="small text-decoration-underline">
+        View complaint
+    </a>
+@endif
     <div class="list-group">
         @forelse($notifications as $n)
             @php $data = $n->data; @endphp

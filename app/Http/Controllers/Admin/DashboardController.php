@@ -9,6 +9,8 @@ use App\Models\Contact;
 use App\Models\User;
 use App\Models\Event;
 use App\Models\Donation;
+use App\Models\Complaint;
+use App\Models\ComplaintType;
 use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
@@ -17,6 +19,11 @@ class DashboardController extends Controller
     public function index()
     {
         $now = Carbon::now();
+
+        // Schema guards to avoid runtime errors when columns are missing in some envs
+        $hasPS = Schema::hasTable('orders') && Schema::hasColumn('orders', 'payment_status');
+        $hasOrderUser = Schema::hasTable('orders') && Schema::hasColumn('orders', 'user_id');
+        $hasEventPaid = Schema::hasTable('events') && Schema::hasColumn('events', 'is_paid') && Schema::hasColumn('events', 'price');
 
         $stats = [
             'products' => Product::count(),
@@ -29,17 +36,22 @@ class DashboardController extends Controller
             'events' => Event::count(),
             'events_upcoming' => Event::where('date', '>', $now)->count(),
             'events_past' => Event::where('date', '<', $now)->count(),
-            'events_free' => Event::where('is_paid', false)->count(),
-            'events_paid' => Event::where('is_paid', true)->count(),
-            'events_revenue' => Event::where('is_paid', true)->sum('price'),
+            'events_free' => $hasEventPaid ? Event::where('is_paid', false)->count() : 0,
+            'events_paid' => $hasEventPaid ? Event::where('is_paid', true)->count() : 0,
+            'events_revenue' => $hasEventPaid ? Event::where('is_paid', true)->sum('price') : 0,
             'donations_sum' => Donation::sum('amount'),
+            'complaints_total' => Complaint::count(),
+'complaints_by_type' => ComplaintType::withCount('complaints')
+    ->pluck('complaints_count', 'name')
+    ->toArray(),
         ];
 
         // Commandes récentes pour le dashboard
-        $recentOrders = Order::with(['items.product', 'user'])
-            ->latest()
-            ->take(5)
-            ->get();
+        $recentOrdersQuery = Order::latest()->take(5);
+        $recentOrders = ($hasOrderUser
+            ? $recentOrdersQuery->with(['items.product', 'user'])
+            : $recentOrdersQuery->with(['items.product'])
+        )->get();
 
         // Notifications récentes
         $recentNotifications = auth()->check()
@@ -47,6 +59,5 @@ class DashboardController extends Controller
             : collect();
 
         return view('dashboard', compact('stats', 'recentOrders', 'recentNotifications'));
-        return view('dashboard', compact('stats'));
     }
 }

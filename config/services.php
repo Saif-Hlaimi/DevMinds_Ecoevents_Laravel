@@ -11,6 +11,10 @@ return [
     | Postmark, AWS, etc. Il sert de point central pour ces informations.
     |
     */
+'text_rewriter' => [
+    'url' => env('TEXT_REWRITER_URL', 'http://127.0.0.1:5000/rewrite'),
+],
+
 
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
