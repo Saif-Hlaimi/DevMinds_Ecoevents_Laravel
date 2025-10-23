@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Complaint;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class ComplaintAdminController extends Controller
 {
@@ -61,4 +62,19 @@ class ComplaintAdminController extends Controller
         $complaint->delete();
         return back()->with('success', 'Réclamation supprimée.');
     }
+
+
+
+    public function translate(Complaint $complaint, Request $request)
+{
+    $lang = $request->query('lang', 'fr'); // par défaut français
+    $tr = new GoogleTranslate($lang);
+
+    $translatedMessage = $tr->translate($complaint->message);
+
+    return response()->json([
+        'translated' => $translatedMessage,
+        'lang' => $lang,
+    ]);
+}
 }

@@ -12,15 +12,19 @@
         </div>
         <div class="card-body">
             <p><strong>Message:</strong></p>
-            <p>{{ $complaint->message }}</p>
+            <p id="complaint-message">{{ $complaint->message }}</p>
+
+            <div class="mt-3">
+                <button class="btn btn-outline-primary btn-sm" onclick="translateMessage('fr')">Traduire en Français</button>
+                <button class="btn btn-outline-success btn-sm" onclick="translateMessage('ar')">Traduire en Arabe</button>
+            </div>
 
             <hr>
-
             <p><strong>Type:</strong> {{ $complaint->type->name ?? '-' }}</p>
             <p><strong>User:</strong> {{ $complaint->user->name }}</p>
             <p><strong>Status:</strong> <span class="badge bg-info">{{ $complaint->status }}</span></p>
             <p><strong>Priority:</strong> <span class="badge bg-warning text-dark">{{ $complaint->priority }}</span></p>
- 
+
             @if($complaint->attachment_path)
                 <hr>
                 <p><strong>Attachment:</strong></p>
@@ -33,4 +37,15 @@
         </div>
     </div>
 </div>
+
+<script>
+function translateMessage(lang) {
+    fetch(`/admin/complaints/{{ $complaint->id }}/translate?lang=${lang}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('complaint-message').innerText = data.translated;
+        })
+        .catch(err => alert("Erreur de traduction : " + err));
+}
+</script>
 @endsection

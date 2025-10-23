@@ -13,9 +13,12 @@ class AddTotalToOrderItemsTable extends Migration
      */
     public function up()
     {
-        Schema::table('order_items', function (Blueprint $table) {
-            $table->decimal('total', 10, 2)->nullable()->after('price');
-        });
+        // Ajouter la colonne seulement si elle n'existe pas déjà
+        if (!Schema::hasColumn('order_items', 'total')) {
+            Schema::table('order_items', function (Blueprint $table) {
+                $table->decimal('total', 10, 2)->nullable()->after('price');
+            });
+        }
     }
 
     /**
@@ -25,8 +28,10 @@ class AddTotalToOrderItemsTable extends Migration
      */
     public function down()
     {
-        Schema::table('order_items', function (Blueprint $table) {
-            $table->dropColumn('total');
-        });
+        if (Schema::hasColumn('order_items', 'total')) {
+            Schema::table('order_items', function (Blueprint $table) {
+                $table->dropColumn('total');
+            });
+        }
     }
 }

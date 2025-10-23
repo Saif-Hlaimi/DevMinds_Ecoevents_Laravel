@@ -369,3 +369,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/complaints/improve-message', [ComplaintController::class, 'improveMessage'])
         ->name('complaints.improve-message');
 });
+
+
+Route::get('/admin/complaints/{complaint}/translate', [ComplaintAdminController::class, 'translate'])
+    ->name('admin.complaints.translate');

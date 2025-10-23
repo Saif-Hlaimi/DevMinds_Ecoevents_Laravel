@@ -13,16 +13,25 @@ class CreateOrderItemsTable extends Migration
      */
     public function up()
     {
-        if (Schema::hasTable('order_items')) return;
-        Schema::create('order_items', function (Blueprint $table) {
-            $table->id(); // Auto-incrementing primary key
-            $table->foreignId('order_id')->constrained()->onDelete('cascade'); // Foreign key to orders table
-            $table->foreignId('product_id')->constrained()->onDelete('cascade'); // Foreign key to products table
-            $table->integer('quantity'); // Quantity of the product ordered
-            $table->decimal('price', 10, 2); // Price of the product at the time of order
-            $table->decimal('total', 10, 2)->nullable(); // Total for this order item (quantity * price)
-            $table->timestamps(); // Created_at and updated_at timestamps
-        });
+        // Crée la table seulement si elle n'existe pas
+        if (!Schema::hasTable('order_items')) {
+            Schema::create('order_items', function (Blueprint $table) {
+                $table->id(); // Auto-incrementing primary key
+                $table->foreignId('order_id')->constrained()->onDelete('cascade'); // Foreign key to orders table
+                $table->foreignId('product_id')->constrained()->onDelete('cascade'); // Foreign key to products table
+                $table->integer('quantity'); // Quantity of the product ordered
+                $table->decimal('price', 10, 2); // Price of the product at the time of order
+                $table->decimal('total', 10, 2)->nullable(); // Total for this order item (quantity * price)
+                $table->timestamps(); // Created_at and updated_at timestamps
+            });
+        } else {
+            // Si la table existe, ajouter la colonne "total" seulement si elle n'existe pas
+            if (!Schema::hasColumn('order_items', 'total')) {
+                Schema::table('order_items', function (Blueprint $table) {
+                    $table->decimal('total', 10, 2)->nullable()->after('price');
+                });
+            }
+        }
     }
 
     /**
