@@ -69,8 +69,8 @@
                   <a href="{{ route('google.login') }}" class="d-flex align-items-center justify-content-center gap-2 py-2 mb-2 btn btn-outline-danger">
                     <img src="{{ asset('assets/images/icon/google.svg') }}" alt="" width="20"> Continue with Google
                   </a>
-                  <a href="{{ route('facebook.login') }}" class="d-flex align-items-center justify-content-center gap-2 py-2 btn btn-primary">
-                    <i class="fa-brands fa-facebook-f"></i> Continue with Facebook
+                  <a href="{{ route('facebook.login') }}" class="d-flex align-items-center justify-content-center gap-2 py-2 mb-2 btn btn-outline-primary" id="facebook-login-btn" onclick="changeFacebookButtonColor()">
+                    <img src="{{ asset('assets/images/icon/facebook.svg') }}" alt="" width="20"> Continue with Facebook
                   </a>
                 </div>
 
@@ -83,4 +83,12 @@
     </div>
   </div>
 </section>
+
+<script>
+function changeFacebookButtonColor() {
+  const facebookBtn = document.getElementById('facebook-login-btn');
+  facebookBtn.classList.remove('btn-outline-primary');
+  facebookBtn.classList.add('btn-primary');
+}
+</script>
 @endsection

@@ -67,7 +67,6 @@ class AuthController extends Controller
             'phone'    => ['nullable', 'string', 'max:20'],
             'country'  => ['nullable', 'string', 'max:100'],
             'profile_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-           
         ]);
 
         // Gestion image de profil
@@ -232,17 +231,19 @@ class AuthController extends Controller
     /**
      * Redirection vers Facebook OAuth
      */
-    public function redirectToFacebook()
-    {
-        try {
-            return Socialite::driver('facebook')->redirect();
-        } catch (Exception $e) {
-            Log::error('Facebook redirect error: ' . $e->getMessage());
-            return redirect()->route('login')->withErrors([
-                'email' => 'Facebook authentication is currently unavailable. Please try another method.'
-            ]);
-        }
+   public function redirectToFacebook()
+{
+    try {
+        return Socialite::driver('facebook')
+            ->scopes(['public_profile', 'email'])  // Ajoutez ceci explicitement
+            ->redirect();
+    } catch (Exception $e) {
+        Log::error('Facebook redirect error: ' . $e->getMessage());
+        return redirect()->route('login')->withErrors([
+            'email' => 'Facebook authentication is currently unavailable. Please try another method.'
+        ]);
     }
+}
 
     /**
      * Callback de Facebook OAuth
