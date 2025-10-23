@@ -15,7 +15,7 @@
         "openai-php/laravel": "^0.17.1",
         "socialiteproviders/facebook": "^4.1",
         "socialiteproviders/google": "^4.1",
-        "square/square": "^43.2",
+    "square/square": ">=38.0.0.20240821",
         "stichoza/google-translate-php": "^5.3",
         "stripe/stripe-php": "^18.0",
         "vonage/client": "^4.2"

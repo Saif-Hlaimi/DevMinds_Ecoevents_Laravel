@@ -63,26 +63,21 @@ return [
      'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('GOOGLE_REDIRECT_URI'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', env('APP_URL').'/auth/google-callback'),
     ],
 
     'facebook' => [
         'client_id' => env('FACEBOOK_CLIENT_ID'),
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
-        'redirect' => env('FACEBOOK_REDIRECT_URI'),
+        'redirect' => env('FACEBOOK_REDIRECT_URI', env('APP_URL').'/auth/facebook-callback'),
     ],
 
+    // Stripe payments (single definition)
     'stripe' => [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
+        'currency' => env('STRIPE_CURRENCY', 'usd'),
     ],
-
-    // moved above; avoid duplicate key
-    'stripe' => [
-    'key' => env('STRIPE_KEY'),
-    'secret' => env('STRIPE_SECRET'),
-    'currency' => env('STRIPE_CURRENCY', 'usd'),
-],
     'openai' => [
     'api_key' => env('OPENAI_API_KEY'),
     ],

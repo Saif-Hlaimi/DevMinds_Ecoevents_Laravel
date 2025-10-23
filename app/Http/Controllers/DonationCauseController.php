@@ -32,7 +32,15 @@ class DonationCauseController extends Controller
 
     public function show(DonationCause $donationCause)
     {
-        return view('pages.donation-causes.show', compact('donationCause'));
+        // Compute remaining amount safely to avoid negative values
+        $goal = (float) ($donationCause->goal_amount ?? 0);
+        $raised = (float) ($donationCause->raised_amount ?? 0);
+        $remaining = max(0, $goal - $raised);
+
+        // Also compute percentage for convenient use in the view if needed
+        $percentage = $goal > 0 ? min(($raised / $goal) * 100, 100) : 0;
+
+        return view('pages.donation-causes.show', compact('donationCause', 'remaining', 'percentage'));
     }
 
     public function edit(DonationCause $donationCause)

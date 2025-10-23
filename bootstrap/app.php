@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin.only' => \App\Http\Middleware\AdminOnly::class,
         ]);
+
+        // Force a single local origin: redirect 127.0.0.1 to localhost
+        $middleware->append(\App\Http\Middleware\ForceLocalhost::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
