@@ -4,7 +4,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "dev:all": "concurrently \"php -S localhost:8000 -t public\" \"vite\""
+    "dev:all": "concurrently \"php -S 127.0.0.1:8000 -t public\" \"vite\""
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
