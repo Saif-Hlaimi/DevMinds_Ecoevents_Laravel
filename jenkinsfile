@@ -2,10 +2,12 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
+        stage('Cleanup Workspace') {
             steps {
+                echo "Cleaning workspace to free disk space..."
+                deleteDir()  // Jenkins built-in: Removes entire workspace contents
                 checkout scm
-                echo "Checked out code from ${env.GIT_URL}"
+                echo "Checked out code from ${env.GIT_URL}. Workspace cleaned."
             }
         }
         
@@ -29,15 +31,34 @@ pipeline {
             steps {
                 echo "Building Laravel artifact..."
                 sh '''
+                    # Install dependencies (they'll be excluded from zip to save space)
                     composer install --no-dev --optimize-autoloader
                     npm ci
                     npm run build
-                    zip -r ecoevents-artifact-${BUILD_NUMBER}.zip . -x "node_modules/*" "vendor/*" ".git/*" "storage/*" ".env*"
+                    
+                    # Additional exclusions for large/irrelevant files
+                    find . -name "*.log" -delete  # Remove logs
+                    find . -name "*.tmp" -delete  # Remove temps
+                    
+                    # Zip with more exclusions if needed (e.g., tests, docs)
+                    zip -r ecoevents-artifact-${BUILD_NUMBER}.zip . \
+                        -x "node_modules/*" "vendor/*" ".git/*" "storage/*" ".env*" \
+                           "tests/*" "docs/*" "*.log" "*.tmp" "coverage/*"
+                    
+                    # Verify zip size and space
+                    du -sh ecoevents-artifact-${BUILD_NUMBER}.zip
+                    df -h .  # Check available space post-build
                 '''
             }
         }
         
         stage('Publish to Nexus') {
+            when {
+                allOf {
+                    branch 'main'  // Optional: Only on main for releases
+                    expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+                }
+            }
             steps {
                 echo "Uploading artifact to Nexus..."
                 nexusArtifactUploader(
@@ -51,7 +72,7 @@ pipeline {
                     artifacts: [
                         [artifactId: 'ecoevents-laravel',
                          classifier: '',
-                         file: 'ecoevents-artifact-${BUILD_NUMBER}.zip',
+                         file: "ecoevents-artifact-${BUILD_NUMBER}.zip",
                          type: 'zip']
                     ]
                 )
@@ -61,13 +82,17 @@ pipeline {
     
     post {
         always {
+            // Archive artifact for manual download if upload fails
+            archiveArtifacts artifacts: 'ecoevents-artifact-${BUILD_NUMBER}.zip', allowEmptyArchive: true
             echo "Pipeline completed. Check SonarQube dashboard for detailed report: http://192.168.33.10:9000/dashboard?id=DevMinds_Ecoevents_Laravel"
+            // Clean up post-run to prevent accumulation
+            cleanWs()  // Jenkins built-in: Cleans workspace after pipeline
         }
         success {
             echo "Artifact published to Nexus! Ready for deploy."
         }
         failure {
-            echo "Pipeline failed. Review SonarQube or build logs."
+            echo "Pipeline failed. Review SonarQube or build logs. Check agent disk space with 'df -h'."
         }
         unstable {
             echo "Pipeline unstable (e.g., Quality Gate warning). Proceed with caution."
