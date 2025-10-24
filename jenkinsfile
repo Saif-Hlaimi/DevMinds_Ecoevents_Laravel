@@ -23,8 +23,7 @@ pipeline {
                             -Dsonar.sources=.
                         """
                     }
-                    // Note: Quality Gate check removed to avoid pausing/failing on issues.
-                    // Analysis runs, but pipeline continues regardless. Review dashboard manually.
+                  
                 }
             }
         }
