@@ -88,7 +88,7 @@ pipeline {
             echo "Pipeline failed. Review SonarQube or build logs. Check agent disk space with 'df -h'."
         }
         unstable {
-            echo "Pipeline unstable (e.g., Quality Gate warning). Proceed with caution."
+            echo "Pipeline unstable (e.g., non-Sonar issues). Proceed with caution."
         }
     }
 }
